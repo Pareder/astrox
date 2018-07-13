@@ -5,7 +5,6 @@ const compression = require('compression')
 
 app = express()
 app.use(serveStatic(__dirname + "/dist"))
-app.use(compression())
 
 const port = process.env.PORT || 5000
 
