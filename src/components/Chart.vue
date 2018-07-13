@@ -5,20 +5,38 @@ export default {
   extends: Bar,
   data () {
     return {
-      launches: null,
       datacollection: {
-        labels: [2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
+        labels: Object.keys(this.launches),
         datasets: [
           {
-            label: 'Launches',
-            backgroundColor: '#1976D2',
-            data: []
+            label: this.agencyAbbrev,
+            backgroundColor: '#00C3E6',
+            borderWidth: 3,
+            borderColor: '#00869e',
+            stack: 'Stack',
+            data: Object.values(this.launches).map(item => item.agency)
+          },
+          {
+            label: 'Total',
+            backgroundColor: '#41B883',
+            borderWidth: 3,
+            borderColor: '#2e845e',
+            stack: 'Stack',
+            data: Object.values(this.launches).map(item => item.total)
           }
         ]
       },
       options: {
+        tooltips: {
+          mode: 'index',
+          intersect: false,
+          titleFontSize: 14,
+          bodyFontSize: 14
+        },
         legend: {
-          display: false
+          labels: {
+            fontSize: 16
+          }
         },
         responsive: true,
         maintainAspectRatio: false,
@@ -27,7 +45,7 @@ export default {
         scales: {
           xAxes: [
             {
-              barPercentage: 0.5,
+              stacked: true,
               ticks: {
                 fontSize: 14
               }
@@ -35,10 +53,11 @@ export default {
           ],
           yAxes: [
             {
+              stacked: true,
               ticks: {
-                max: 20,
                 beginAtZero: true,
-                fontSize: 14
+                fontSize: 14,
+                callback: (value) => Number.isInteger(value) ? value : void (0)
               }
             }
           ]
@@ -52,37 +71,22 @@ export default {
   props: {
     openDialog: {
       type: Function
+    },
+    launches: {
+      type: Object
+    },
+    agencyAbbrev: {
+      type: String
     }
   },
-  created () {
-    this.$http.get(`https://api.spacexdata.com/v2/launches`, { responseType: 'json' })
-      .then(response => {
-        this.launches = [ ...response.body ]
-        this.getYears()
-      }, response => {
-        console.log(response)
-      })
+  mounted () {
+    this.renderChart(this.datacollection, this.options)
   },
   methods: {
-    getYears () {
-      this.years = this.launches.map(item => new Date(item.launch_date_utc).getFullYear())
-      for (let i = 0; i < this.datacollection.labels.length; i++) {
-        this.datacollection.datasets[0].data.push(this.calcCountByYear(this.datacollection.labels[i]))
-      }
-      this.renderChart(this.datacollection, this.options)
-    },
-    calcCountByYear (year) {
-      return this.years.filter(item => item === year).length
-    },
     chartClicked (evt, item) {
       if (item[0]) {
-        this.yearClicked = item[0]['_model'].label
-        const launchesByYear = this.launches.filter(item => {
-          if (new Date(item.launch_date_utc).getFullYear() === this.yearClicked) {
-            return item
-          }
-        })
-        this.openDialog(launchesByYear, this.yearClicked)
+        this.yearClicked = +item[0]['_model'].label
+        this.openDialog(this.yearClicked)
       }
     }
   }

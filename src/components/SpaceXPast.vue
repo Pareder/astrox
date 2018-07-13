@@ -1,11 +1,12 @@
 <template>
   <div>
-    <Chart v-if="launchesByYears" style="min-height: 75vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="agencyAbbrev" />
-    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :agencyName="agencyName" />
+    <Chart v-if="launchesByYears" style="min-height: 70vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="'SpX'" />
+    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" />
   </div>
 </template>
 <script>
 import Chart from './Chart'
+import PieChart from './PieChart'
 import LaunchModal from './LaunchModal'
 
 export default {
@@ -18,30 +19,19 @@ export default {
       launchesByYearClicked: null
     }
   },
-  props: {
-    agencyId: {
-      type: Number
-    },
-    agencyAbbrev: {
-      type: String
-    },
-    agencyName: {
-      type: String
-    }
-  },
   created () {
     this.getLaunchesByYears()
   },
   methods: {
     getLaunchesByYears () {
       const getAgencyLaunches = new Promise((resolve, reject) => {
-        if (this.$store.getters.agencyPastLaunches(this.agencyId)) {
-          this.launches = [...this.$store.getters.agencyPastLaunches(this.agencyId)]
+        if (this.$store.getters.agencyPastLaunches('spacex')) {
+          this.launches = [...this.$store.getters.agencyPastLaunches('spacex')]
           resolve()
         } else {
-          this.$store.dispatch('getAgencyPastLaunches', this.agencyId)
+          this.$store.dispatch('getPastLaunches', 'spacex')
             .then(() => {
-              this.launches = [...this.$store.getters.agencyPastLaunches(this.agencyId)]
+              this.launches = [...this.$store.getters.agencyPastLaunches('spacex')]
               resolve()
             })
             .catch(error => {
@@ -67,7 +57,8 @@ export default {
         .then(values => {
           this.launchesByYears = {}
           values[1].map(item => {
-            this.launchesByYears[item.year] = { agency: this.calcCountByYear(item.year), total: item.amount }
+            const countByYears = this.calcCountByYear(item.year)
+            this.launchesByYears[item.year] = { agency: countByYears, total: item.amount }
           })
         })
         .catch(error => {
@@ -75,13 +66,11 @@ export default {
         })
     },
     calcCountByYear (year) {
-      return this.launches.length > 0 ? this.launches.filter(item => {
-        return new Date(item.net).getFullYear() === year && new Date(item.net).getTime() < Date.now()
-      }).length : 0
+      return this.launches.filter(item => new Date(item.launch_date_utc).getFullYear() === year).length
     },
     openDialog (year) {
       this.launchesByYearClicked = this.launches.filter(item => {
-        if (new Date(item.net).getFullYear() === year && new Date(item.net).getTime() < Date.now()) {
+        if (new Date(item.launch_date_utc).getFullYear() === year) {
           return item
         }
       })
@@ -94,6 +83,7 @@ export default {
   },
   components: {
     Chart,
+    PieChart,
     LaunchModal
   }
 }

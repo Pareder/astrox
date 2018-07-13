@@ -1,91 +1,98 @@
 <template>
-  <v-card tile>
-    <v-toolbar dark color="primary">
-      <v-toolbar-title>Upcoming launches</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text>
-      <v-container
-        fluid
-        style="min-height: 0;"
-        grid-list-lg>
-        <v-layout row wrap>
-          <v-flex xs12 v-for="(launch, id) in launches" :key="id">
-            <v-card light>
-              <div class="headline pt-3">{{ launch.mission_name }}</div>
-              <v-list light three-line>
-                <v-subheader>Information</v-subheader>
-                <v-list-tile avatar>
-                  <v-list-tile-content>
-                    <v-btn large right @click.stop="getRocketDetails(id)">{{ launch.rocket.rocket_name }}</v-btn>
-                    <v-list-tile-sub-title>Rocket</v-list-tile-sub-title>
-                  </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile avatar>
-                  <v-avatar>
-                    <v-icon>access_time</v-icon>
-                  </v-avatar>
-                  <v-list-tile-content>
-                    <v-list-tile-title>{{ new Date(launch.launch_date_utc).toLocaleString() }}</v-list-tile-title>
-                    <v-list-tile-sub-title>Launch Date</v-list-tile-sub-title>
-                  </v-list-tile-content>
-                </v-list-tile>
-                <v-list-tile avatar>
-                  <v-avatar>
-                    <v-icon>place</v-icon>
-                  </v-avatar>
-                  <v-list-tile-content>
-                    <v-list-tile-title>{{ launch.launch_site.site_name_long }}</v-list-tile-title>
-                    <v-list-tile-sub-title>Launch Site</v-list-tile-sub-title>
-                  </v-list-tile-content>
-                </v-list-tile>
-                <v-card-text class="text-xs-left subheading" v-if="launch.details">
-                  {{ launch.details }}
-                </v-card-text>
-              </v-list>
-            </v-card>
-          </v-flex>
-        </v-layout>
-      </v-container>
-    </v-card-text>
-    <div style="flex: 1 1 auto;"></div>
-    <RocketModal :dialog="rocketDialog" :closeDialog="closeRocketDialog" :rocket="rocket" />
-  </v-card>
+  <div>
+    <Chart v-if="launchesByYears" style="min-height: 75vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="agencyAbbrev" />
+    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :agencyName="agencyName" />
+  </div>
 </template>
 <script>
-import RocketModal from './RocketModal'
+import LaunchModal from './LaunchModal'
+import Chart from './Chart'
 
 export default {
   data () {
     return {
+      allUpcomingLaunches: null,
       launches: null,
-      rocket: null,
-      rocketDialog: false
+      launchesByYears: null,
+      launchesByYearClicked: null,
+      year: null,
+      dialog: false
+    }
+  },
+  props: {
+    agencyId: {
+      type: Number
+    },
+    agencyAbbrev: {
+      type: String
+    },
+    agencyName: {
+      type: String
     }
   },
   created () {
-    this.$http.get('https://api.spacexdata.com/v2/launches/upcoming', { responseType: 'json' })
-      .then(response => {
-        this.launches = [ ...response.body ]
-      }, response => {
-        console.log(response)
-      })
+    this.getAgencyLaunches()
   },
   methods: {
-    getRocketDetails (id) {
-      this.$http.get(`https://api.spacexdata.com/v2/rockets/${this.launches[id].rocket.rocket_name.replace(' ', '').toLowerCase()}`)
-        .then(response => {
-          this.rocket = { ...response.body }
-          this.rocketDialog = true
-        }, response => {
-          console.log(response)
-        })
+    getAgencyLaunches () {
+      if (this.$store.getters.agencyUpcomingLaunches(this.agencyId)) {
+        this.launches = [...this.$store.getters.agencyUpcomingLaunches(this.agencyId)]
+        this.getLaunchesByYears()
+      } else {
+        this.$store.dispatch('getAgencyUpcomingLaunches', this.agencyId)
+          .then(() => {
+            this.launches = [...this.$store.getters.agencyUpcomingLaunches(this.agencyId)]
+            this.getLaunchesByYears()
+          })
+          .catch(error => {
+            console.log(error)
+            this.launches = []
+            this.getLaunchesByYears()
+          })
+      }
     },
-    closeRocketDialog () {
-      this.rocketDialog = false
+    getLaunchesByYears (lastYear) {
+      if (this.$store.state.allUpcomingLaunches) {
+        this.allUpcomingLaunches = [...this.$store.state.allUpcomingLaunches]
+        this.setLaunchesByYears()
+      } else {
+        this.$store.dispatch('getAllUpcomingLaunches')
+          .then(() => {
+            this.allUpcomingLaunches = [...this.$store.state.allUpcomingLaunches]
+            this.setLaunchesByYears()
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      }
+    },
+    setLaunchesByYears () {
+      this.launchesByYears = {}
+      this.allUpcomingLaunches.map(item => {
+        this.launchesByYears[item.year] = { agency: this.calcCountByYear(item.year), total: item.amount }
+      })
+    },
+    calcCountByYear (year) {
+      return this.launches.length > 0 ? this.launches.filter(item => {
+        return new Date(item.net).getFullYear() === year
+      }).length : 0
+    },
+    openDialog (year) {
+      this.launchesByYearClicked = this.launches.filter(item => {
+        if (new Date(item.net).getFullYear() === year) {
+          return item
+        }
+      })
+      this.year = year
+      this.dialog = true
+    },
+    closeDialog () {
+      this.dialog = false
     }
   },
   components: {
-    RocketModal
+    LaunchModal,
+    Chart
   }
 }
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="500px">
+  <v-dialog v-model="localDialog" max-width="500px">
     <v-card v-if="rocket">
       <div class="headline pa-3">
         {{ rocket.name }}
@@ -55,11 +55,24 @@ export default {
     dialog: {
       type: Boolean
     },
+    mutateDialog: {
+      type: Function
+    },
     closeDialog: {
       type: Function
     },
     rocket: {
       type: Object
+    }
+  },
+  computed: {
+    localDialog: {
+      get () {
+        return this.dialog
+      },
+      set (newValue) {
+        this.mutateDialog(newValue)
+      }
     }
   }
 }

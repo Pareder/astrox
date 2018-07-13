@@ -25,4 +25,16 @@ body {
   text-align: center;
   color: #2c3e50;
 }
+.v-list__tile__content {
+  overflow: visible;
+}
+.visible-overflow {
+  overflow: visible;
+}
+.tabs__bar .material-icons {
+  display: flex;
+}
+.normal-space {
+  white-space: normal;
+}
 </style>
