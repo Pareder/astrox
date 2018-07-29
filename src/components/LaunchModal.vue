@@ -7,7 +7,7 @@
         </v-btn>
         <v-toolbar-title>{{ agencyName ? `${agencyName} ` : '' }}Launches in {{ year }}</v-toolbar-title>
       </v-toolbar>
-      <v-card-text v-if="+$route.params.id === 121">
+      <v-card-text v-if="isSpaceX">
         <h3 v-if="!launches || launches.length === 0">No launches in this year</h3>
         <v-tabs v-else v-model="activeLaunch" color="primary darken-2" dark slider-color="yellow" show-arrows>
           <v-tab v-for="(launch, id) in launches" :key="id" ripple>
@@ -89,8 +89,15 @@
         </v-tabs>
       </v-card-text>
       <v-card-text v-else>
-        <h3 v-if="!launches || launches.length === 0">No launches in this year</h3>
-        <LaunchLayout :launches="launches" />
+        <h3 v-if="!launches || launches.length === 0">
+          <v-chip>
+            <v-avatar class="red">
+              <v-icon>close</v-icon>
+            </v-avatar>
+             No launches in selected period
+          </v-chip>
+        </h3>
+        <LaunchLayout :launches="launches" :past="past" />
       </v-card-text>
       <div style="flex: 1 1 auto;"></div>
     </v-card>
@@ -125,6 +132,12 @@ export default {
     },
     agencyName: {
       type: String
+    },
+    isSpaceX: {
+      type: Boolean
+    },
+    past: {
+      type: Boolean
     }
   },
   methods: {

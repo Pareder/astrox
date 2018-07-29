@@ -35,6 +35,7 @@ export default {
   },
   methods: {
     getAgencyLaunches () {
+      this.$Progress.start()
       if (this.$store.getters.agencyUpcomingLaunches(this.agencyId)) {
         this.launches = [...this.$store.getters.agencyUpcomingLaunches(this.agencyId)]
         this.getLaunchesByYears()
@@ -60,9 +61,11 @@ export default {
           .then(() => {
             this.allUpcomingLaunches = [...this.$store.state.allUpcomingLaunches]
             this.setLaunchesByYears()
+            this.$Progress.finish()
           })
           .catch(error => {
             console.log(error)
+            this.$Progress.fail()
           })
       }
     },

@@ -1,9 +1,9 @@
 <template>
   <v-container fluid>
     <v-flex xs12 sm6 offset-sm3>
-      <v-select outline auto :loading="loading" :items="getYears" label="Select a year to see companies' launches" v-model="chosenYear" @change="makeChart"></v-select>
+      <v-select outline auto :loading="loading" :items="getYears" label="Select a year to see companies' launches" v-model="chosenYear" @input="makeChart"></v-select>
     </v-flex>
-    <div v-if="launchesByAgency">
+    <div v-if="launchesByAgency && !error">
       <p class="text-xs-left headline">Total: {{ totalLaunches }}</p>
       <PieChart :chartData="getChartData" />
     </div>
@@ -16,7 +16,7 @@ import PieChart from './PieChart'
 export default {
   data () {
     return {
-      chosenYear: null,
+      chosenYear: new Date().getFullYear(),
       launches: null,
       agencies: null,
       launchesByAgency: null,
@@ -47,9 +47,12 @@ export default {
       }
     }
   },
+  created () {
+    this.makeChart()
+  },
   methods: {
     makeChart () {
-      this.loading = true
+      this.$Progress.start()
       this.error = false
       this.$http.get(`https://launchlibrary.net/1.4/launch?startdate=${this.chosenYear}-01-01&enddate=${this.chosenYear}-12-31&limit=-1`)
         .then(response => {
@@ -65,8 +68,8 @@ export default {
         }, response => {
           this.launches = null
           this.error = true
-          this.loading = false
           console.log(response.body.msg)
+          this.$Progress.fail()
         })
     },
     getAgencies () {
@@ -87,10 +90,10 @@ export default {
       launchesForSort.sort((a, b) => {
         return b.amount - a.amount
       })
-      console.log(launchesForSort.map(item => item.amount))
       launchesForSort.map(item => {
         this.launchesByAgency[item.name] = item.amount
       })
+      this.$Progress.finish()
     },
     calcAgencyCount (lsp) {
       return this.launches.length > 0 ? this.launches.filter(item => {

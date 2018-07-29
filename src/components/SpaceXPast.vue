@@ -1,7 +1,7 @@
 <template>
   <div>
     <Chart v-if="launchesByYears" style="min-height: 70vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="'SpX'" />
-    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" />
+    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :isSpaceX="true" />
   </div>
 </template>
 <script>

@@ -13,7 +13,7 @@
               </v-avatar>
               <v-list-tile-content>
                 <v-list-tile-title class="normal-space">
-                  {{ launch.lsp && launch.lsp.name }}, {{ launch.lsp && launch.lsp.countryCode }}
+                  <router-link class="no-underline" :to="`/agencies/${launch.lsp.id}`">{{ launch.lsp && launch.lsp.name }}</router-link>, {{ launch.lsp && launch.lsp.countryCode }}
                 </v-list-tile-title>
                 <v-list-tile-sub-title>
                   Agency
@@ -76,14 +76,14 @@ export default {
   props: {
     launches: {
       type: Array
+    },
+    past: {
+      type: Boolean
     }
   },
   computed: {
     start () {
       return this.$route.name === 'Start'
-    },
-    past () {
-      return this.$route.name === 'AgencyPastLaunches'
     }
   },
   methods: {
@@ -119,3 +119,11 @@ export default {
   }
 }
 </script>
+<style scoped>
+.no-underline {
+  text-decoration: none;
+}
+.no-underline:hover {
+  text-decoration: underline;
+}
+</style>

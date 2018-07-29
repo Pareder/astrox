@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <router-view/>
+    <vue-progress-bar></vue-progress-bar>
   </div>
 </template>
 
@@ -11,6 +12,9 @@ export default {
 </script>
 
 <style>
+@import '../node_modules/vuetify/dist/vuetify.min.css';
+@import '../node_modules/material-design-icons-iconfont/dist/material-design-icons.css';
+
 * {
   box-sizing: border-box;
 }
@@ -29,7 +33,7 @@ body {
   overflow: visible;
 }
 .visible-overflow {
-  overflow: visible;
+  overflow: visible !important;
 }
 .tabs__bar .material-icons {
   display: flex;

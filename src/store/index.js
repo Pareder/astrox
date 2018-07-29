@@ -12,7 +12,8 @@ const store = new Vuex.Store({
     allUpcomingLaunches: null,
     agencies: null,
     launchDetails: null,
-    missionTypes: null
+    missionTypes: null,
+    presentYearLaunches: null
   },
 
   mutations: {
@@ -49,6 +50,11 @@ const store = new Vuex.Store({
 
     SET_AGENCIES (state, payload) {
       state.agencies = [...payload]
+      state.agencies.map((item, index) => {
+        if (item.name.toLowerCase() === 'unknown') {
+          state.agencies.splice(index, 1)
+        }
+      })
     },
 
     SET_AGENCYTYPES (state, payload) {
@@ -103,6 +109,13 @@ const store = new Vuex.Store({
       state.missionTypes = [...payload]
       if (!localStorage.getItem('missionTypes')) {
         localStorage.setItem('missionTypes', JSON.stringify(payload))
+      }
+    },
+
+    SET_PRESENT_YEAR_LAUNCHES (state, payload) {
+      state.presentYearLaunches = [...payload.data]
+      if (payload.update) {
+        localStorage.setItem('presentYearLaunches', JSON.stringify(payload.data))
       }
     }
   },
@@ -425,6 +438,31 @@ const store = new Vuex.Store({
             })
         })
       }
+    },
+
+    getPresentYearLaunches ({ commit }) {
+      if (localStorage.getItem('presentYearLaunches')) {
+        const launches = JSON.parse(localStorage.getItem('presentYearLaunches'))
+        if (new Date(launches[0].net) > Date.now()) {
+          return new Promise((resolve) => {
+            commit('SET_PRESENT_YEAR_LAUNCHES', { data: launches })
+            resolve()
+          })
+        }
+      }
+      return new Promise((resolve, reject) => {
+        const date = new Date(new Date().getFullYear(), 11, 31)
+        const formattedDate = `${date.getFullYear()}-${date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() + 1)}-${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`
+        const finalYear = `${new Date().getFullYear()}-${new Date().getMonth() > 8 ? new Date().getMonth() + 1 : '0' + (new Date().getMonth() + 1)}-${new Date().getDate() > 9 ? new Date().getDate() : '0' + new Date().getDate()}`
+        Vue.http.get(`https://launchlibrary.net/1.4/launch/${formattedDate}/${finalYear}?limit=-1`)
+          .then(response => {
+            commit('SET_PRESENT_YEAR_LAUNCHES', { data: response.body.launches, update: true })
+            resolve()
+          })
+          .catch(error => {
+            reject(new Error(error))
+          })
+      })
     }
   },
   getters: {

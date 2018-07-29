@@ -1,7 +1,7 @@
 <template>
   <div>
     <Chart v-if="launchesByYears" style="min-height: 75vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="agencyAbbrev" />
-    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :agencyName="agencyName" />
+    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :agencyName="agencyName" :past="true" />
   </div>
 </template>
 <script>
@@ -34,6 +34,7 @@ export default {
   },
   methods: {
     getLaunchesByYears () {
+      this.$Progress.start()
       const getAgencyLaunches = new Promise((resolve, reject) => {
         if (this.$store.getters.agencyPastLaunches(this.agencyId)) {
           this.launches = [...this.$store.getters.agencyPastLaunches(this.agencyId)]
@@ -69,9 +70,11 @@ export default {
           values[1].map(item => {
             this.launchesByYears[item.year] = { agency: this.calcCountByYear(item.year), total: item.amount }
           })
+          this.$Progress.finish()
         })
         .catch(error => {
           console.log(error)
+          this.$Progress.fail()
         })
     },
     calcCountByYear (year) {
