@@ -3,7 +3,7 @@ import Router from 'vue-router'
 import Start from '@/components/Start'
 import Agencies from '@/components/Agencies'
 import AgencyLaunches from '@/components/AgencyLaunches'
-import PieChartLaunches from '@/components/PieChartLaunches'
+import LaunchesCharts from '@/components/LaunchesCharts'
 
 Vue.use(Router)
 
@@ -27,8 +27,8 @@ const router = new Router({
         },
         {
           path: '/charts',
-          name: 'Piechart',
-          component: PieChartLaunches
+          name: 'LaunchesCharts',
+          component: LaunchesCharts
         }
       ]
     }

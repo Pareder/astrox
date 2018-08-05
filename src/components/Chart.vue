@@ -11,7 +11,7 @@ export default {
           {
             label: this.agencyAbbrev,
             backgroundColor: '#00C3E6',
-            borderWidth: 3,
+            borderWidth: 0,
             borderColor: '#00869e',
             stack: 'Stack',
             data: Object.values(this.launches).map(item => item.agency)
@@ -19,7 +19,7 @@ export default {
           {
             label: 'Total',
             backgroundColor: '#41B883',
-            borderWidth: 3,
+            borderWidth: 0,
             borderColor: '#2e845e',
             stack: 'Stack',
             data: Object.values(this.launches).map(item => item.total)
@@ -31,7 +31,14 @@ export default {
           mode: 'index',
           intersect: false,
           titleFontSize: 14,
-          bodyFontSize: 14
+          bodyFontSize: 14,
+          callbacks: {
+            label: (tooltipItem, data) => {
+              const tooltipData = tooltipItem.yLabel
+              const tooltipPercentage = parseFloat((tooltipData / data.datasets[1].data[tooltipItem.index] * 100).toFixed(1))
+              return `${data.datasets[tooltipItem.datasetIndex].label}: ${tooltipData} (${tooltipPercentage}%)`
+            }
+          }
         },
         legend: {
           labels: {
@@ -65,7 +72,8 @@ export default {
         onClick: this.chartClicked
       },
       years: null,
-      yearClicked: null
+      yearClicked: null,
+      unwatch: null
     }
   },
   props: {
@@ -80,7 +88,25 @@ export default {
     }
   },
   mounted () {
+    this.unwatch = this.$store.watch(
+      () => {
+        this.colorTheme = this.$store.getters.getColorTheme
+        return this.$store.getters.getColorTheme
+      },
+      (val) => {
+        this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+        this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+        this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+        this.renderChart(this.datacollection, this.options)
+      }
+    )
+    this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+    this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+    this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
     this.renderChart(this.datacollection, this.options)
+  },
+  destroyed () {
+    this.unwatch()
   },
   methods: {
     chartClicked (evt, item) {

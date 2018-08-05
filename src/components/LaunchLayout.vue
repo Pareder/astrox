@@ -6,7 +6,7 @@
           <v-card-title class="justify-center">
             <h3 class="headline">{{ launch.name }}</h3>
           </v-card-title>
-          <v-list light>
+          <v-list>
             <v-list-tile avatar v-if="start">
               <v-avatar>
                 <v-icon>business</v-icon>
@@ -24,7 +24,7 @@
               <v-avatar>
                 <v-icon>access_time</v-icon>
               </v-avatar>
-              <v-list-tile-content>
+              <v-list-tile-content class="visible-overflow">
                 <v-list-tile-title v-if="past">{{ new Date(launch.net).toLocaleString() }}</v-list-tile-title>
                 <v-list-tile-title v-else class="visible-overflow">
                   <v-tooltip top>
@@ -55,7 +55,7 @@
             </v-list-tile>
           </v-list>
           <v-card-actions>
-            <v-btn large flat outline color="primary" @click.stop="getLaunchDetails(launch.id)">Details</v-btn>
+            <v-btn large flat outline :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="getLaunchDetails(launch.id)">Details</v-btn>
           </v-card-actions>
         </v-card>
       </lazy-component>
@@ -64,6 +64,7 @@
   </v-layout>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 import DetailsModal from './DetailsModal'
 
 export default {
@@ -84,7 +85,10 @@ export default {
   computed: {
     start () {
       return this.$route.name === 'Start'
-    }
+    },
+    ...mapGetters({
+      colorTheme: 'getColorTheme'
+    })
   },
   methods: {
     getLaunchDetails (id) {

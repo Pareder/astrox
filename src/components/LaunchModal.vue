@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition" scrollable>
     <v-card tile>
-      <v-toolbar dark color="primary">
+      <v-toolbar dark :color="colorTheme === 'light' ? 'primary' : ''">
         <v-btn icon dark @click.native="closeDialog">
           <v-icon>close</v-icon>
         </v-btn>
@@ -9,22 +9,22 @@
       </v-toolbar>
       <v-card-text v-if="isSpaceX">
         <h3 v-if="!launches || launches.length === 0">No launches in this year</h3>
-        <v-tabs v-else v-model="activeLaunch" color="primary darken-2" dark slider-color="yellow" show-arrows>
+        <v-tabs v-else v-model="activeLaunch" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="yellow" show-arrows>
           <v-tab v-for="(launch, id) in launches" :key="id" ripple>
             {{ new Date(launch.launch_date_utc).toLocaleDateString().slice(0, -5) }}
           </v-tab>
           <v-tab-item v-for="(launch, id) in launches" :key="launch.id" lazy>
-            <v-card light>
+            <v-card>
               <div class="headline pa-3">{{ launch.mission_name }}</div>
               <v-container fluid grid-list-lg>
                 <v-layout row wrap>
                   <v-flex xs12 md6>
                     <v-card-media :src="launch.links.mission_patch" height="100%" contain>
-                      <v-list light three-line class="list-with-bg" style="background: rgba(255,255,255,0.9)">
+                      <v-list three-line class="list-with-bg" :style="`background-color:${colorTheme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(66, 66, 66, 0.9)'}`">
                         <v-subheader>Information</v-subheader>
                         <v-list-tile avatar>
                           <v-list-tile-content>
-                            <v-btn large color="primary" right @click.stop="getRocketDetails(id)">{{ launch.rocket.rocket_name }}</v-btn>
+                            <v-btn large :color="colorTheme === 'light' ? 'primary' : ''" right @click.stop="getRocketDetails(id)">{{ launch.rocket.rocket_name }}</v-btn>
                             <v-list-tile-sub-title>Rocket</v-list-tile-sub-title>
                           </v-list-tile-content>
                         </v-list-tile>
@@ -55,7 +55,7 @@
                     </v-card-media>
                   </v-flex>
                   <v-flex xs12 md6 class="pr-3">
-                    <v-tabs v-model="launch.activeTab" color="primary darken-2" dark slider-color="lime" icons-and-text>
+                    <v-tabs v-model="launch.activeTab" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="lime" icons-and-text>
                       <v-tab>
                         Map
                         <v-icon>map</v-icon>
@@ -102,10 +102,10 @@
       <div style="flex: 1 1 auto;"></div>
     </v-card>
     <RocketModal :dialog="rocketDialog" :closeDialog="closeRocketDialog" :mutateDialog="mutateRocketDialog" :rocket="rocket" />
-    <img src="../../static/rocket.png" width="50" height="50" class="rocket" />
   </v-dialog>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 import LaunchLayout from './LaunchLayout'
 import RocketModal from './RocketModal'
 
@@ -140,6 +140,11 @@ export default {
       type: Boolean
     }
   },
+  computed: {
+    ...mapGetters({
+      colorTheme: 'getColorTheme'
+    })
+  },
   methods: {
     getRocketDetails (id) {
       const name = this.launches[id].rocket.rocket_name.replace(' ', '').toLowerCase()
@@ -173,32 +178,5 @@ export default {
 <style>
 .list-with-bg {
   width: 100%;
-}
-.rocket {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  z-index: 5;
-  animation: rocket 4s linear infinite;
-}
-@keyframes rocket {
-  25% {
-    transform: translate(50px, -50%) rotate(30deg);
-  }
-  40% {
-    transform: translate(10px, -90%) rotate(-30deg);
-  }
-  50% {
-    transform: translate(0, -100%) rotate(-210deg);
-  }
-  75% {
-    transform: translate(50px, -50%) rotate(-180deg);
-  }
-  90% {
-    transform: translate(10px, -10%) rotate(-150deg);
-  }
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
 }
 </style>

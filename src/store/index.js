@@ -13,7 +13,8 @@ const store = new Vuex.Store({
     agencies: null,
     launchDetails: null,
     missionTypes: null,
-    presentYearLaunches: null
+    presentYearLaunches: null,
+    colorTheme: localStorage.getItem('colorTheme') ? localStorage.getItem('colorTheme') : 'light'
   },
 
   mutations: {
@@ -60,6 +61,13 @@ const store = new Vuex.Store({
     SET_AGENCYTYPES (state, payload) {
       state.agencies.map(item => {
         item.type = payload[item.type - 1].name
+      })
+    },
+
+    SET_AGENCY_CONTINENT (state, payload) {
+      state.agencies.map(item => {
+        item.continent = payload[item.countryCode] ? payload[item.countryCode].continent : ''
+        item.countryName = payload[item.countryCode] ? payload[item.countryCode].country : item.countryCode
       })
       if (!localStorage.getItem('launchAgencies')) {
         localStorage.setItem('launchAgencies', JSON.stringify(state.agencies))
@@ -117,6 +125,11 @@ const store = new Vuex.Store({
       if (payload.update) {
         localStorage.setItem('presentYearLaunches', JSON.stringify(payload.data))
       }
+    },
+
+    SET_COLOR_THEME (state, payload) {
+      state.colorTheme = payload
+      localStorage.setItem('colorTheme', payload)
     }
   },
   actions: {
@@ -349,15 +362,25 @@ const store = new Vuex.Store({
               reject(error)
             })
         })
+        const getContinents = new Promise((resolve, reject) => {
+          Vue.http.get('./static/countries.json')
+            .then(response => {
+              resolve(response.body)
+            })
+            .catch(error => {
+              reject(error)
+            })
+        })
         return new Promise((resolve, reject) => {
-          Promise.all([getAgencies, getAgencyTypes])
+          Promise.all([getAgencies, getAgencyTypes, getContinents])
             .then(values => {
               commit('SET_AGENCIES', values[0])
               commit('SET_AGENCYTYPES', values[1])
+              commit('SET_AGENCY_CONTINENT', values[2])
               resolve()
             })
             .catch(error => {
-              reject(new Error(error.body.msg))
+              reject(new Error(error))
             })
         })
       }
@@ -474,7 +497,9 @@ const store = new Vuex.Store({
 
     agencyUpcomingLaunches: (state) => (id) => state.agencyLaunches[id] ? state.agencyLaunches[id].upcoming : null,
 
-    missionType: (state) => (id) => state.missionTypes.find(item => item.id === id).name
+    missionType: (state) => (id) => state.missionTypes.find(item => item.id === id).name,
+
+    getColorTheme: (state) => state.colorTheme
   }
 })
 export default store

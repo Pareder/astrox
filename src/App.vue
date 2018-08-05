@@ -27,18 +27,21 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
 }
-.v-list__tile__content {
-  overflow: visible;
+.v-card__media__content {
+  width: 100%;
 }
 .visible-overflow {
   overflow: visible !important;
 }
-.tabs__bar .material-icons {
+.v-tabs__bar .material-icons {
   display: flex;
 }
 .normal-space {
   white-space: normal;
+}
+.v-toolbar__content .colorChanger {
+  width: 30px;
+  height: 30px;
 }
 </style>

@@ -44,12 +44,14 @@
         </v-list>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="primary" @click.stop="closeDialog">Close</v-btn>
+        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="closeDialog">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   props: {
     dialog: {
@@ -73,7 +75,10 @@ export default {
       set (newValue) {
         this.mutateDialog(newValue)
       }
-    }
+    },
+    ...mapGetters({
+      colorTheme: 'getColorTheme'
+    })
   }
 }
 </script>

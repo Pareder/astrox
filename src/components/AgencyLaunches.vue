@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-tabs v-model="active" color="primary" dark slider-color="yellow" align-with-title>
+    <v-tabs v-model="active" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="yellow" align-with-title>
       <v-tab ripple>
         Past
       </v-tab>
@@ -18,6 +18,7 @@
   </div>
 </template>
 <script>
+import { mapGetters } from 'vuex'
 import SpaceXPast from './SpaceXPast'
 import PastLaunches from './PastLaunches'
 import UpcomingLaunches from './UpcomingLaunches'
@@ -41,6 +42,11 @@ export default {
     name: {
       type: String
     }
+  },
+  computed: {
+    ...mapGetters({
+      colorTheme: 'getColorTheme'
+    })
   },
   created () {
     if (!this.agencyAbbrev || !this.agencyName) {

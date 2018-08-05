@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="px-3">
     <div class="mb-5">
-      <h1 dark class="display-2 pa-4 ma-3">AstroX</h1>
-      <p class="headline">Now you see all launches from now till the end of this year, change it to see the desired period</p>
+      <h1 dark class="display-1 pa-2 ma-1">AstroX</h1>
+      <p class="headline">We provide you the information about all rocket launches</p>
       <p class="subheading grey--text">Select date to see all rocket launches between selected date and today</p>
     </div>
     <v-flex xs12 sm4 md2 offset-sm4 offset-md5>
@@ -23,7 +23,7 @@
         No launches in selected period
       </v-chip>
     </h3>
-    <LaunchLayout v-if="launches" :launches="launches" />
+    <LaunchLayout v-if="launches" :launches="launches" :past="past" />
   </div>
 </template>
 <script>
@@ -36,7 +36,8 @@ export default {
       datepicker: null,
       progressDialog: false,
       dateModal: false,
-      error: false
+      error: false,
+      past: false
     }
   },
   created () {
@@ -65,6 +66,11 @@ export default {
       const date = isNaN(e) ? new Date(this.datepicker) : e
       const formattedDate = `${date.getFullYear()}-${date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() + 1)}-${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`
       const finalYear = `${new Date().getFullYear()}-${new Date().getMonth() > 8 ? new Date().getMonth() + 1 : '0' + (new Date().getMonth() + 1)}-${new Date().getDate() > 9 ? new Date().getDate() : '0' + new Date().getDate()}`
+      if (formattedDate < finalYear) {
+        this.past = true
+      } else {
+        this.past = false
+      }
       this.$http.get(`https://launchlibrary.net/1.4/launch/${formattedDate}/${finalYear}?limit=-1`)
         .then(response => {
           this.launches = response.body.launches

@@ -16,7 +16,7 @@
             <v-card-title class="justify-center">
               <div class="title px-3" style="width: 100%">{{ agency.name }}</div>
               <v-menu class="absolute_menu">
-                <v-btn slot="activator" light icon>
+                <v-btn slot="activator" icon>
                   <v-icon>more_vert</v-icon>
                 </v-btn>
                 <v-list>
@@ -37,6 +37,8 @@
   </v-container>
 </template>
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   data () {
     return {
@@ -53,7 +55,10 @@ export default {
     },
     agencyCountries () {
       return ['ALL', ...new Set(this.agencies.map(item => item.countryCode).sort())]
-    }
+    },
+    ...mapGetters({
+      colorTheme: 'getColorTheme'
+    })
   },
   created () {
     if (this.$store.state.agencies) {
@@ -78,7 +83,7 @@ export default {
     },
     goToLaunches (id, abbrev, name) {
       this.$router.push({
-        name: 'AgencyLauches',
+        name: 'AgencyLaunches',
         params: { id: id, abbrev: abbrev, name: name }
       })
     },

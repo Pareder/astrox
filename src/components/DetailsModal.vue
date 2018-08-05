@@ -1,11 +1,14 @@
 <template>
   <v-dialog v-model="localDialog" max-width="500px">
     <v-card v-if="launch">
-      <div class="headline pa-3">
+      <v-btn absolute icon class="close-btn" @click.native="closeDialog">
+        <v-icon color="grey">close</v-icon>
+      </v-btn>
+      <div class="headline px-5 pt-3">
         {{ launch.name }}
       </div>
       <v-card-text>
-        <v-list light two-line>
+        <v-list two-line>
           <v-list-tile avatar>
             <v-list-tile-avatar>
               <img :src="imageURL" height="100%">
@@ -28,7 +31,7 @@
             {{ launch.missions[0].description }}
           </p>
         </v-list>
-        <v-tabs v-model="activeTab" color="primary darken-2" dark slider-color="lime">
+        <v-tabs v-model="activeTab" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="lime">
           <v-tab>
             <v-icon>map</v-icon>
           </v-tab>
@@ -50,12 +53,14 @@
         </v-tabs>
       </v-card-text>
       <v-card-actions>
-        <v-btn color="primary" @click.stop="closeDialog">Close</v-btn>
+        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="closeDialog">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   data () {
     return {
@@ -94,7 +99,10 @@ export default {
     imageURL () {
       const imageArray = this.launch.rocket.imageURL.split('_')
       return `${imageArray[0]}_320.${imageArray[1].split('.')[1]}`
-    }
+    },
+    ...mapGetters({
+      colorTheme: 'getColorTheme'
+    })
   },
   watch: {
     launch: function (value) {
@@ -117,3 +125,9 @@ export default {
   }
 }
 </script>
+<style scoped>
+.close-btn {
+  top: 6px;
+  left: 6px;
+}
+</style>
