@@ -10,6 +10,7 @@
             <v-list-tile-title class="title">Home</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+        <v-divider></v-divider>
         <v-list-tile @click="goToPage('/agencies')" active-class="red--text">
           <v-list-tile-action>
             <v-icon>business</v-icon>
@@ -18,6 +19,7 @@
             <v-list-tile-title class="title">Agencies</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+        <v-divider></v-divider>
         <v-list-tile @click="goToPage('/charts')" active-class="red--text">
           <v-list-tile-action>
             <v-icon>pie_chart</v-icon>

@@ -55,7 +55,8 @@ export default {
               stacked: true,
               ticks: {
                 fontSize: 14
-              }
+              },
+              gridLines: {}
             }
           ],
           yAxes: [
@@ -65,7 +66,8 @@ export default {
                 beginAtZero: true,
                 fontSize: 14,
                 callback: (value) => Number.isInteger(value) ? value : void (0)
-              }
+              },
+              gridLines: {}
             }
           ]
         },
@@ -97,12 +99,16 @@ export default {
         this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
         this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
         this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+        this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+        this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
         this.renderChart(this.datacollection, this.options)
       }
     )
     this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
     this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
     this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+    this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+    this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
     this.renderChart(this.datacollection, this.options)
   },
   destroyed () {

@@ -5,9 +5,8 @@
   </div>
 </template>
 <script>
-import Chart from './Chart'
-import PieChart from './PieChart'
-import LaunchModal from './LaunchModal'
+import Chart from './charts/Chart'
+import LaunchModal from './modals/LaunchModal'
 
 export default {
   data () {
@@ -25,13 +24,13 @@ export default {
   methods: {
     getLaunchesByYears () {
       const getAgencyLaunches = new Promise((resolve, reject) => {
-        if (this.$store.getters.agencyPastLaunches('spacex')) {
-          this.launches = [...this.$store.getters.agencyPastLaunches('spacex')]
+        if (this.$store.state.agenciesLaunches['121'] && this.$store.state.agenciesLaunches['121'].official) {
+          this.launches = this.$store.state.agenciesLaunches['121'].official
           resolve()
         } else {
-          this.$store.dispatch('getPastLaunches', 'spacex')
+          this.$store.dispatch('getSpaceXLaunches')
             .then(() => {
-              this.launches = [...this.$store.getters.agencyPastLaunches('spacex')]
+              this.launches = this.$store.state.agenciesLaunches['121'].official
               resolve()
             })
             .catch(error => {
@@ -83,7 +82,6 @@ export default {
   },
   components: {
     Chart,
-    PieChart,
     LaunchModal
   }
 }

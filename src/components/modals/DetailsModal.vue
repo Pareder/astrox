@@ -11,7 +11,7 @@
         <v-list two-line>
           <v-list-tile avatar>
             <v-list-tile-avatar>
-              <img :src="imageURL" height="100%">
+              <img :src="imageURL" class="rocket_img" height="100%">
             </v-list-tile-avatar>
             <v-list-tile-content>
               <v-list-tile-title>{{ launch.rocket.familyname }} | {{ launch.rocket.name }}</v-list-tile-title>
@@ -53,6 +53,7 @@
         </v-tabs>
       </v-card-text>
       <v-card-actions>
+        <v-spacer></v-spacer>
         <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="closeDialog">Close</v-btn>
       </v-card-actions>
     </v-card>

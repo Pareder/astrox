@@ -1,7 +1,8 @@
 <template>
   <div class="px-3">
     <div class="mb-5">
-      <h1 dark class="display-1 pa-2 ma-1">AstroX</h1>
+      <img class="pa-2 ma-1" src="../../static/astrox.png" alt="AstroX" title="AstroX">
+      <!--<h1 dark class="display-1 pa-2 ma-1">AstroX</h1>-->
       <p class="headline">We provide you the information about all rocket launches</p>
       <p class="subheading grey--text">Select date to see all rocket launches between selected date and today</p>
     </div>
@@ -15,6 +16,26 @@
         </v-date-picker>
       </v-dialog>
     </v-flex>
+    <div v-if="launches">
+      <v-chip v-if="new Date(datepicker) < new Date() && datepicker">
+        <v-avatar class="red lighten-1">
+          <v-icon>close</v-icon>
+        </v-avatar>
+        <strong>{{ failedLaunches }}</strong> &nbsp;failed {{ failedLaunches === 1 ? 'launch' : 'launches' }}
+      </v-chip>
+      <v-chip v-if="new Date(datepicker) < new Date() && datepicker">
+        <v-avatar class="light-green accent-4">
+          <v-icon>done</v-icon>
+        </v-avatar>
+        <strong>{{ successfulLaunches }}</strong> &nbsp;successful {{ successfulLaunches === 1 ? 'launch' : 'launches' }}
+      </v-chip>
+      <v-chip v-if="new Date(datepicker) > new Date() || !datepicker">
+        <v-avatar class="yellow">
+          <v-icon>timeline</v-icon>
+        </v-avatar>
+        <strong>{{ pendingLaunches }}</strong> &nbsp;pending {{ pendingLaunches === 1 ? 'launch' : 'launches' }}
+      </v-chip>
+    </div>
     <h3 v-if="error">
       <v-chip>
         <v-avatar class="red">
@@ -38,6 +59,17 @@ export default {
       dateModal: false,
       error: false,
       past: false
+    }
+  },
+  computed: {
+    failedLaunches () {
+      return this.launches.filter(item => item.status === 4 || item.failreason).length
+    },
+    successfulLaunches () {
+      return this.launches.filter(item => item.status === 3).length
+    },
+    pendingLaunches () {
+      return this.launches.filter(item => item.status === 1 || item.status === 2).length
     }
   },
   created () {

@@ -24,6 +24,16 @@ export default {
           },
           gridLines: {},
           ticks: {}
+        },
+        tooltips: {
+          callbacks: {
+            label: (tooltipItem, data) => {
+              const allData = data.datasets[tooltipItem.datasetIndex].data
+              const tooltipData = allData[tooltipItem.index]
+              const tooltipPercentage = (tooltipData / allData.reduce((sum, next) => sum + next) * 100).toFixed(1)
+              return `Launches: ${tooltipData} (${tooltipPercentage}%)`
+            }
+          }
         }
       }
     }

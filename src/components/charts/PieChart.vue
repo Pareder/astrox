@@ -10,26 +10,14 @@ export default {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        /* onResize: () => {
-          const width = document.body.getBoundingClientRect().width
-          if (width < 1000 && this.options.legend.display) {
-            this.options.legend.display = false
-            this.$data._chart.destroy()
-            this.renderChart(this.chartData, this.options)
-          } else if (width > 1000 && !this.options.legend.display) {
-            this.options.legend.display = true
-            this.$data._chart.destroy()
-            this.renderChart(this.chartData, this.options)
-          }
-        }, */
         title: {
           display: true,
-          text: 'Launches by companies',
+          text: this.title || 'Launches by companies',
           fontSize: 16
         },
         legend: {
-          display: true,
-          position: 'left',
+          display: !this.noLegend,
+          position: this.position || 'left',
           labels: {
             fontSize: 16
           }
@@ -39,8 +27,8 @@ export default {
             label: (tooltipItem, data) => {
               const allData = data.datasets[tooltipItem.datasetIndex].data
               const tooltipData = allData[tooltipItem.index]
-              const tooltipPercentage = Math.round((tooltipData / allData.reduce((sum, next) => sum + next)) * 100)
-              return `${data.labels[tooltipItem.index]} (${tooltipPercentage}%)`
+              const tooltipPercentage = (tooltipData / allData.reduce((sum, next) => sum + next) * 100).toFixed(1)
+              return `${data.labels[tooltipItem.index]}: ${tooltipData} (${tooltipPercentage}%)`
             }
           }
         }
@@ -51,6 +39,15 @@ export default {
   props: {
     chartData: {
       type: Object
+    },
+    title: {
+      type: String
+    },
+    noLegend: {
+      type: Boolean
+    },
+    position: {
+      type: String
     }
   },
   mounted () {

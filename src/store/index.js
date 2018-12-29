@@ -4,11 +4,10 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
   state: {
-    info: null,
-    agencyLaunches: {},
+    agenciesLaunches: {},
     rockets: {},
     history: null,
-    historyLaunches: null,
+    historyLaunches: {},
     allUpcomingLaunches: null,
     agencies: null,
     launchDetails: null,
@@ -18,28 +17,21 @@ const store = new Vuex.Store({
   },
 
   mutations: {
-    SET_INFO (state, payload) {
-      state.info = payload
-    },
-
-    SET_ROCKET (state, payload) {
-      state.rockets[payload.name] = payload.data
-      if (payload.update) {
-        const rockets = JSON.parse(localStorage.getItem('rockets')) || {}
-        rockets[payload.name] = payload.data
-        localStorage.setItem('rockets', JSON.stringify(rockets))
-      }
-    },
-
     SET_HISTORY (state, payload) {
       state.history = [...payload]
-      if (!localStorage.getItem('launchHistorry')) {
-        localStorage.setItem('launchHistorry', JSON.stringify(payload))
+      if (!localStorage.getItem('launchHistory')) {
+        localStorage.setItem('launchHistory', JSON.stringify(payload))
       }
     },
 
     SET_HISTORY_LAUNCHES (state, payload) {
-      state.historyLaunches = [...payload]
+      state.historyLaunches[payload.year] = state.historyLaunches[payload.year] || {}
+      state.historyLaunches[payload.year].launches = payload.data
+      state.historyLaunches[payload.year].changed = state.historyLaunches[payload.year].changed || new Date().toUTCString()
+
+      if (payload.update) {
+        localStorage.setItem('historyLaunches', JSON.stringify(Object.assign({}, JSON.parse(localStorage.getItem('historyLaunches')), state.historyLaunches)))
+      }
     },
 
     SET_ALL_UPCOMING_LAUNCHES (state, payload) {
@@ -74,9 +66,15 @@ const store = new Vuex.Store({
       }
     },
 
-    SET_AGENCY_PAST_LAUNCHES (state, payload) {
-      state.agencyLaunches[payload.id] = state.agencyLaunches[payload.id] || {}
-      state.agencyLaunches[payload.id].past = payload.data
+    SET_AGENCY_LAUNCHES (state, payload) {
+      state.agenciesLaunches[payload.id] = state.agenciesLaunches[payload.id] || {}
+      state.agenciesLaunches[payload.id].launches = payload.data
+      state.agenciesLaunches[payload.id].changed = state.agenciesLaunches[payload.id].changed || new Date().toUTCString()
+
+      if (payload.official) {
+        state.agenciesLaunches[payload.id].official = payload.official
+      }
+
       if (payload.locations) {
         const locs = {}
         payload.locations.map(item => {
@@ -85,26 +83,13 @@ const store = new Vuex.Store({
             lng: item.location.longitude
           }
         })
-        state.agencyLaunches[payload.id].past.map(item => {
+        state.agenciesLaunches[payload.id].official.map(item => {
           item.location = locs[item.launch_site.site_id]
         })
       }
-      if (payload.update) {
-        const savedLaunches = JSON.parse(localStorage.getItem('agencyLaunches')) || {}
-        savedLaunches[payload.id] = savedLaunches[payload.id] || {}
-        savedLaunches[payload.id].past = payload.data
-        localStorage.setItem('agencyLaunches', JSON.stringify(savedLaunches))
-      }
-    },
 
-    SET_AGENCY_UPCOMING_LAUNCHES (state, payload) {
-      state.agencyLaunches[payload.id] = state.agencyLaunches[payload.id] || {}
-      state.agencyLaunches[payload.id].upcoming = payload.data
       if (payload.update) {
-        const savedLaunches = JSON.parse(localStorage.getItem('agencyLaunches')) || {}
-        savedLaunches[payload.id] = savedLaunches[payload.id] || {}
-        savedLaunches[payload.id].upcoming = payload.data
-        localStorage.setItem('agencyLaunches', JSON.stringify(savedLaunches))
+        localStorage.setItem('agenciesLaunches', JSON.stringify(Object.assign({}, JSON.parse(localStorage.getItem('agenciesLaunches')), state.agenciesLaunches)))
       }
     },
 
@@ -127,119 +112,34 @@ const store = new Vuex.Store({
       }
     },
 
+    SET_ROCKET (state, payload) {
+      state.rockets[payload.name] = payload.data
+      if (payload.update) {
+        const rockets = JSON.parse(localStorage.getItem('rockets')) || {}
+        rockets[payload.name] = payload.data
+        localStorage.setItem('rockets', JSON.stringify(rockets))
+      }
+    },
+
     SET_COLOR_THEME (state, payload) {
       state.colorTheme = payload
       localStorage.setItem('colorTheme', payload)
     }
   },
   actions: {
-    getInfo ({ commit }) {
-      return new Promise((resolve, reject) => {
-        Vue.http.get('https://api.spacexdata.com/v2/info')
-          .then(response => {
-            commit('SET_INFO', response.body)
-            resolve()
-          })
-          .catch(error => {
-            reject(new Error(error))
-          })
-      })
-    },
-
-    getPastLaunches ({ commit }, id) {
-      if (localStorage.getItem('agencyLaunches') && JSON.parse(localStorage.getItem('agencyLaunches'))[id] && JSON.parse(localStorage.getItem('agencyLaunches'))[id].past) {
-        const launches = JSON.parse(localStorage.getItem('agencyLaunches'))[id]
-        if (launches.upcoming && new Date(launches.upcoming[0].launch_date_utc).getTime() > Date.now()) {
-          return new Promise((resolve) => {
-            commit('SET_AGENCY_PAST_LAUNCHES', { id: id, data: launches.past })
-            resolve()
-          })
-        }
-      }
-      const getLaunches = new Promise((resolve, reject) => {
-        Vue.http.get('https://api.spacexdata.com/v2/launches')
-          .then(response => {
-            resolve(response.body)
-          })
-          .catch(error => {
-            reject(new Error(error))
-          })
-      })
-      const getLocations = new Promise((resolve, reject) => {
-        Vue.http.get('https://api.spacexdata.com/v2/launchpads')
-          .then(response => {
-            resolve(response.body)
-          })
-          .catch(error => {
-            reject(new Error(error))
-          })
-      })
-      return new Promise((resolve, reject) => {
-        Promise.all([getLaunches, getLocations])
-          .then(values => {
-            commit('SET_AGENCY_PAST_LAUNCHES', { data: values[0], id: id, locations: values[1], update: true })
-            resolve()
-          })
-          .catch(error => {
-            reject(new Error(error))
-          })
-      })
-    },
-
-    getUpcomingLaunches ({ commit }, id) {
-      if (localStorage.getItem('agencyLaunches') && JSON.parse(localStorage.getItem('agencyLaunches'))[id] && JSON.parse(localStorage.getItem('agencyLaunches'))[id].upcoming) {
-        const upcoming = JSON.parse(localStorage.getItem('agencyLaunches'))[id].upcoming
-        if (new Date(upcoming[0].launch_date_utc).getTime() > Date.now()) {
-          return new Promise((resolve) => {
-            commit('SET_AGENCY_UPCOMING_LAUNCHES', { id: id, data: upcoming })
-            resolve()
-          })
-        }
-      }
-      return new Promise((resolve, reject) => {
-        Vue.http.get('https://api.spacexdata.com/v2/launches/upcoming')
-          .then(response => {
-            commit('SET_AGENCY_UPCOMING_LAUNCHES', { id: id, data: response.body, update: true })
-            resolve()
-          })
-          .catch(error => {
-            reject(new Error(error))
-          })
-      })
-    },
-
-    getRocket ({ commit }, name) {
-      if (localStorage.getItem('rockets') && JSON.parse(localStorage.getItem('rockets'))[name]) {
-        return new Promise((resolve) => {
-          commit('SET_ROCKET', { name: name, data: JSON.parse(localStorage.getItem('rockets'))[name] })
-          resolve()
-        })
-      }
-      return new Promise((resolve, reject) => {
-        Vue.http.get(`https://api.spacexdata.com/v2/rockets/${name}`)
-          .then(response => {
-            commit('SET_ROCKET', { name: name, data: response.body, update: true })
-            resolve()
-          })
-          .catch(error => {
-            reject(new Error(error))
-          })
-      })
-    },
-
     getHistory ({ commit }) {
-      if (localStorage.getItem('launchHistorry')) {
+      if (localStorage.getItem('launchHistory')) {
         if (localStorage.getItem('upcomingLaunches')) {
           const nextLaunch = JSON.parse(localStorage.getItem('upcomingLaunches'))[0].nextLaunch
           if (new Date(nextLaunch) > Date.now()) {
             return new Promise((resolve) => {
-              commit('SET_HISTORY', JSON.parse(localStorage.getItem('launchHistorry')))
+              commit('SET_HISTORY', JSON.parse(localStorage.getItem('launchHistory')))
               resolve()
             })
           }
         } else {
           return new Promise((resolve) => {
-            commit('SET_HISTORY', JSON.parse(localStorage.getItem('launchHistorry')))
+            commit('SET_HISTORY', JSON.parse(localStorage.getItem('launchHistory')))
             resolve()
           })
         }
@@ -254,7 +154,7 @@ const store = new Vuex.Store({
           if (year === new Date().getFullYear()) {
             finalYear = `${year}-${new Date().getMonth() > 8 ? new Date().getMonth() + 1 : '0' + (new Date().getMonth() + 1)}-${new Date().getDate() > 9 ? new Date().getDate() : '0' + new Date().getDate()}`
           }
-          Vue.http.get(`https://launchlibrary.net/1.4/launch/${year}-01-01/${finalYear || (year + '-12-31')}`)
+          Vue.http.get(`https://launchlibrary.net/1.4/launch?startdate=${year}-01-01&enddate=${finalYear || (year + '-12-31')}&limit=1`)
             .then(response => {
               resolve({ year: year, amount: response.body.total })
             })
@@ -267,6 +167,28 @@ const store = new Vuex.Store({
         Promise.all(promises)
           .then(values => {
             commit('SET_HISTORY', values)
+            resolve()
+          })
+          .catch(error => {
+            reject(new Error(error))
+          })
+      })
+    },
+
+    getHistoryLaunches ({ commit }, year) {
+      if (localStorage.getItem('historyLaunches')) {
+        const yearLaunches = JSON.parse(localStorage.getItem('historyLaunches'))[year]
+        if (!!yearLaunches && (year < new Date().getFullYear() || new Date(yearLaunches.changed) > new Date().setDate(new Date().getDate() - 3))) {
+          return new Promise((resolve) => {
+            commit('SET_HISTORY_LAUNCHES', { data: yearLaunches.launches, year: year })
+            resolve()
+          })
+        }
+      }
+      return new Promise((resolve, reject) => {
+        Vue.http.get(`https://launchlibrary.net/1.4/launch?startdate=${year}-01-01&enddate=${year}-12-31&limit=-1`)
+          .then(response => {
+            commit('SET_HISTORY_LAUNCHES', { data: response.body.launches, year: year, update: true })
             resolve()
           })
           .catch(error => {
@@ -294,7 +216,7 @@ const store = new Vuex.Store({
               if (year === new Date().getFullYear()) {
                 presentYear = `${year}-${new Date().getMonth() > 8 ? new Date().getMonth() + 1 : '0' + (new Date().getMonth() + 1)}-${new Date().getDate() > 9 ? new Date().getDate() : '0' + new Date().getDate()}`
               }
-              Vue.http.get(`https://launchlibrary.net/1.4/launch/${presentYear || year + '-01-01'}/${year}-12-31`)
+              Vue.http.get(`https://launchlibrary.net/1.4/launch?startdate=${presentYear || year + '-01-01'}&enddate=${year}-12-31&limit=1`)
                 .then(response => {
                   if (presentYear) {
                     resolve({ year: year, amount: response.body.total, nextLaunch: response.body.launches[0].net })
@@ -386,12 +308,12 @@ const store = new Vuex.Store({
       }
     },
 
-    getAgencyPastLaunches ({ commit }, id) {
-      if (localStorage.getItem('agencyLaunches') && JSON.parse(localStorage.getItem('agencyLaunches'))[id] && JSON.parse(localStorage.getItem('agencyLaunches'))[id].past) {
-        const past = JSON.parse(localStorage.getItem('agencyLaunches'))[id].past
-        if (new Date(past[past.length - 1].net).getTime() > Date.now()) {
+    getAgencyAllLaunches ({ commit }, id) {
+      if (localStorage.getItem('agenciesLaunches') && JSON.parse(localStorage.getItem('agenciesLaunches'))[id]) {
+        const agencyLaunches = JSON.parse(localStorage.getItem('agenciesLaunches'))[id]
+        if (new Date(agencyLaunches.changed) < new Date().setDate(new Date().getDate() - 7)) {
           return new Promise((resolve) => {
-            commit('SET_AGENCY_PAST_LAUNCHES', { id: id, data: past })
+            commit('SET_AGENCY_LAUNCHES', { id: id, data: agencyLaunches.launches })
             resolve()
           })
         }
@@ -399,7 +321,7 @@ const store = new Vuex.Store({
       return new Promise((resolve, reject) => {
         Vue.http.get(`https://launchlibrary.net/1.4/launch?lsp=${id}&limit=-1`)
           .then(response => {
-            commit('SET_AGENCY_PAST_LAUNCHES', { id: id, data: response.body.launches, update: true })
+            commit('SET_AGENCY_LAUNCHES', { id: id, data: response.body.launches, update: true })
             resolve()
           })
           .catch(error => {
@@ -408,24 +330,52 @@ const store = new Vuex.Store({
       })
     },
 
-    getAgencyUpcomingLaunches ({ commit }, id) {
-      if (localStorage.getItem('agencyLaunches') && JSON.parse(localStorage.getItem('agencyLaunches'))[id] && JSON.parse(localStorage.getItem('agencyLaunches'))[id].upcoming) {
-        const upcoming = JSON.parse(localStorage.getItem('agencyLaunches'))[id].upcoming
-        if (new Date(upcoming[0].net).getTime() > Date.now()) {
+    getSpaceXLaunches ({ commit }) {
+      const agenciesLaunches = JSON.parse(localStorage.getItem('agenciesLaunches'))
+      if (agenciesLaunches && agenciesLaunches['121'] && agenciesLaunches['121'].official) {
+        const agencyLaunches = { ...agenciesLaunches['121'] }
+        if (new Date(agencyLaunches.changed) > new Date().setDate(new Date().getDate() - 7)) {
           return new Promise((resolve) => {
-            commit('SET_AGENCY_UPCOMING_LAUNCHES', { id: id, data: upcoming })
+            commit('SET_AGENCY_LAUNCHES', { id: 121, data: agencyLaunches.launches, official: agencyLaunches.official })
             resolve()
           })
         }
       }
-      return new Promise((resolve, reject) => {
-        Vue.http.get(`https://launchlibrary.net/1.4/launch?next=-1&lsp=${id}`)
+      const getAllLaunches = new Promise((resolve, reject) => {
+        Vue.http.get('https://launchlibrary.net/1.4/launch?limit=-1&lsp=121')
           .then(response => {
-            commit('SET_AGENCY_UPCOMING_LAUNCHES', { id: id, data: response.body.launches, update: true })
+            resolve(response.body.launches)
+          })
+          .catch(error => {
+            reject(new Error(error))
+          })
+      })
+      const getOfficialLaunches = new Promise((resolve, reject) => {
+        Vue.http.get('https://api.spacexdata.com/v2/launches')
+          .then(response => {
+            resolve(response.body)
+          })
+          .catch(error => {
+            reject(new Error(error))
+          })
+      })
+      const getLocations = new Promise((resolve, reject) => {
+        Vue.http.get('https://api.spacexdata.com/v2/launchpads')
+          .then(response => {
+            resolve(response.body)
+          })
+          .catch(error => {
+            reject(new Error(error))
+          })
+      })
+      return new Promise((resolve, reject) => {
+        Promise.all([getAllLaunches, getOfficialLaunches, getLocations])
+          .then(values => {
+            commit('SET_AGENCY_LAUNCHES', { id: 121, data: values[0], official: values[1], locations: values[2], update: true })
             resolve()
           })
           .catch(error => {
-            reject(new Error(error.body.msg))
+            reject(new Error(error))
           })
       })
     },
@@ -463,6 +413,25 @@ const store = new Vuex.Store({
       }
     },
 
+    getRocket ({ commit }, name) {
+      if (localStorage.getItem('rockets') && JSON.parse(localStorage.getItem('rockets'))[name]) {
+        return new Promise((resolve) => {
+          commit('SET_ROCKET', { name: name, data: JSON.parse(localStorage.getItem('rockets'))[name] })
+          resolve()
+        })
+      }
+      return new Promise((resolve, reject) => {
+        Vue.http.get(`https://api.spacexdata.com/v2/rockets/${name}`)
+          .then(response => {
+            commit('SET_ROCKET', { name: name, data: response.body, update: true })
+            resolve()
+          })
+          .catch(error => {
+            reject(new Error(error))
+          })
+      })
+    },
+
     getPresentYearLaunches ({ commit }) {
       if (localStorage.getItem('presentYearLaunches')) {
         const launches = JSON.parse(localStorage.getItem('presentYearLaunches'))
@@ -493,9 +462,15 @@ const store = new Vuex.Store({
       return state.agencies.find(agency => agency.id === id)
     },
 
-    agencyPastLaunches: (state) => (id) => state.agencyLaunches[id] ? state.agencyLaunches[id].past : null,
+    agencyAllLaunches: (state) => (id) => {
+      return state.agenciesLaunches[id] ? state.agenciesLaunches[id].launches : []
+    },
 
-    agencyUpcomingLaunches: (state) => (id) => state.agencyLaunches[id] ? state.agencyLaunches[id].upcoming : null,
+    agencyPastLaunches: (state) => (id) => {
+      return state.agenciesLaunches[id] ? state.agenciesLaunches[id].launches.filter(item => new Date(item.net) <= new Date()) : []
+    },
+
+    agencyUpcomingLaunches: (state) => (id) => state.agenciesLaunches[id] ? state.agenciesLaunches[id].launches.filter(item => new Date(item.net) > new Date()) : [],
 
     missionType: (state) => (id) => state.missionTypes.find(item => item.id === id).name,
 

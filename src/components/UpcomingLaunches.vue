@@ -5,8 +5,9 @@
   </div>
 </template>
 <script>
-import LaunchModal from './LaunchModal'
-import Chart from './Chart'
+import { mapGetters } from 'vuex'
+import LaunchModal from './modals/LaunchModal'
+import Chart from './charts/Chart'
 
 export default {
   data () {
@@ -30,19 +31,24 @@ export default {
       type: String
     }
   },
+  computed: {
+    ...mapGetters([
+      'agencyUpcomingLaunches'
+    ])
+  },
   created () {
     this.getAgencyLaunches()
   },
   methods: {
     getAgencyLaunches () {
       this.$Progress.start()
-      if (this.$store.getters.agencyUpcomingLaunches(this.agencyId)) {
-        this.launches = [...this.$store.getters.agencyUpcomingLaunches(this.agencyId)]
+      if (this.$store.state.agenciesLaunches[this.agencyId]) {
+        this.launches = this.agencyUpcomingLaunches(this.agencyId)
         this.getLaunchesByYears()
       } else {
-        this.$store.dispatch('getAgencyUpcomingLaunches', this.agencyId)
+        this.$store.dispatch('getAgencyAllLaunches', this.agencyId)
           .then(() => {
-            this.launches = [...this.$store.getters.agencyUpcomingLaunches(this.agencyId)]
+            this.launches = this.agencyUpcomingLaunches(this.agencyId)
             this.getLaunchesByYears()
           })
           .catch(error => {
@@ -56,6 +62,7 @@ export default {
       if (this.$store.state.allUpcomingLaunches) {
         this.allUpcomingLaunches = [...this.$store.state.allUpcomingLaunches]
         this.setLaunchesByYears()
+        this.$Progress.finish()
       } else {
         this.$store.dispatch('getAllUpcomingLaunches')
           .then(() => {

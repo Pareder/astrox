@@ -12,8 +12,11 @@
                 <v-icon>business</v-icon>
               </v-avatar>
               <v-list-tile-content>
-                <v-list-tile-title class="normal-space">
+                <v-list-tile-title class="normal-space" v-if="launch.lsp">
                   <router-link class="no-underline" :to="`/agencies/${launch.lsp.id}`">{{ launch.lsp && launch.lsp.name }}</router-link>, {{ launch.lsp && launch.lsp.countryCode }}
+                </v-list-tile-title>
+                <v-list-tile-title class="normal-space" v-else>
+                  Unknown
                 </v-list-tile-title>
                 <v-list-tile-sub-title>
                   Agency
@@ -28,8 +31,8 @@
                 <v-list-tile-title v-if="past">{{ new Date(launch.net).toLocaleString() }}</v-list-tile-title>
                 <v-list-tile-title v-else class="visible-overflow">
                   <v-tooltip top>
-                    <v-badge color="grey" slot="activator">
-                      <span slot="badge" v-if="launch.tbddate === 1 || launch.tbdtime === 1">?</span>
+                    <v-badge color="transparent" slot="activator">
+                      <v-icon slot="badge" v-if="launch.tbddate === 1 || launch.tbdtime === 1" small>info</v-icon>
                       {{ new Date(launch.net).toLocaleString() }}
                     </v-badge>
                     <span v-if="launch.tbddate === 1 || launch.tbdtime === 1">Launch date is not exact</span>
@@ -65,7 +68,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import DetailsModal from './DetailsModal'
+import DetailsModal from './modals/DetailsModal'
 
 export default {
   data () {

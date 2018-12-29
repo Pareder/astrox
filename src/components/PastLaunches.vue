@@ -5,8 +5,9 @@
   </div>
 </template>
 <script>
-import Chart from './Chart'
-import LaunchModal from './LaunchModal'
+import { mapGetters } from 'vuex'
+import Chart from './charts/Chart'
+import LaunchModal from './modals/LaunchModal'
 
 export default {
   data () {
@@ -29,6 +30,11 @@ export default {
       type: String
     }
   },
+  computed: {
+    ...mapGetters([
+      'agencyPastLaunches'
+    ])
+  },
   created () {
     this.getLaunchesByYears()
   },
@@ -36,13 +42,13 @@ export default {
     getLaunchesByYears () {
       this.$Progress.start()
       const getAgencyLaunches = new Promise((resolve, reject) => {
-        if (this.$store.getters.agencyPastLaunches(this.agencyId)) {
-          this.launches = [...this.$store.getters.agencyPastLaunches(this.agencyId)]
+        if (this.$store.state.agenciesLaunches[this.agencyId]) {
+          this.launches = this.agencyPastLaunches(this.agencyId)
           resolve()
         } else {
-          this.$store.dispatch('getAgencyPastLaunches', this.agencyId)
+          this.$store.dispatch('getAgencyAllLaunches', this.agencyId)
             .then(() => {
-              this.launches = [...this.$store.getters.agencyPastLaunches(this.agencyId)]
+              this.launches = this.agencyPastLaunches(this.agencyId)
               resolve()
             })
             .catch(error => {

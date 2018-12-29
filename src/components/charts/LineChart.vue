@@ -15,7 +15,7 @@ export default {
         },
         title: {
           display: true,
-          text: 'Launches by months',
+          text: this.title,
           fontSize: 16
         },
         scales: {
@@ -34,6 +34,16 @@ export default {
               ticks: {}
             }
           ]
+        },
+        tooltips: {
+          callbacks: {
+            label: (tooltipItem, data) => {
+              const allData = data.datasets[tooltipItem.datasetIndex].data
+              const tooltipData = allData[tooltipItem.index]
+              const tooltipPercentage = (tooltipData / allData.reduce((sum, next) => sum + next) * 100).toFixed(1)
+              return `Launches: ${tooltipData} (${tooltipPercentage}%)`
+            }
+          }
         }
       }
     }
@@ -41,6 +51,9 @@ export default {
   props: {
     chartData: {
       type: Object
+    },
+    title: {
+      type: String
     }
   },
   mounted () {

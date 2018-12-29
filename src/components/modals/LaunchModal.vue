@@ -2,13 +2,18 @@
   <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition" scrollable>
     <v-card tile>
       <v-toolbar dark :color="colorTheme === 'light' ? 'primary' : ''">
-        <v-btn icon dark @click.native="closeDialog">
+        <v-btn icon dark @click.native="close">
           <v-icon>close</v-icon>
         </v-btn>
         <v-toolbar-title>{{ agencyName ? `${agencyName} ` : '' }}Launches in {{ year }}</v-toolbar-title>
       </v-toolbar>
       <v-card-text v-if="isSpaceX">
-        <h3 v-if="!launches || launches.length === 0">No launches in this year</h3>
+        <v-chip v-if="!launches || launches.length === 0">
+          <v-avatar class="red">
+            <v-icon>close</v-icon>
+          </v-avatar>
+          No launches in this year
+        </v-chip>
         <v-tabs v-else v-model="activeLaunch" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="yellow" show-arrows>
           <v-tab v-for="(launch, id) in launches" :key="id" ripple>
             {{ new Date(launch.launch_date_utc).toLocaleDateString().slice(0, -5) }}
@@ -106,7 +111,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import LaunchLayout from './LaunchLayout'
+import LaunchLayout from '../LaunchLayout'
 import RocketModal from './RocketModal'
 
 export default {
@@ -146,6 +151,10 @@ export default {
     })
   },
   methods: {
+    close () {
+      this.activeLaunch = 0
+      this.closeDialog()
+    },
     getRocketDetails (id) {
       const name = this.launches[id].rocket.rocket_name.replace(' ', '').toLowerCase()
       if (this.$store.state.rockets[name]) {
