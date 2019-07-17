@@ -24,8 +24,8 @@
               <v-container fluid grid-list-lg>
                 <v-layout row wrap>
                   <v-flex xs12 md6>
-                    <v-card-media :src="launch.links.mission_patch" height="100%" contain>
-                      <v-list three-line class="list-with-bg" :style="`background-color:${colorTheme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(66, 66, 66, 0.9)'}`">
+                    <v-img class="no-padding" :src="launch.links.mission_patch" height="100%" contain>
+                      <v-list three-line class="list-with-bg" :style="`background-color:${colorTheme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(66, 66, 66, 0.9)'}; height: 100%`">
                         <v-subheader>Information</v-subheader>
                         <v-list-tile avatar>
                           <v-list-tile-content>
@@ -57,7 +57,7 @@
                           {{ launch.details }}
                         </v-card-text>
                       </v-list>
-                    </v-card-media>
+                    </v-img>
                   </v-flex>
                   <v-flex xs12 md6 class="pr-3">
                     <v-tabs v-model="launch.activeTab" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="lime" icons-and-text>

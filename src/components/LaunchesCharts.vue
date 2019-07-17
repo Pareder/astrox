@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-flex xs12 sm6 offset-sm3>
-      <v-select outline auto :loading="loading" :items="getYears" label="Select a year to see companies' launches" v-model="chosenYear" @input="makeCharts"></v-select>
+      <v-select outline menu-props="auto" :loading="loading" :items="getYears" label="Select a year to see companies' launches" v-model="chosenYear" @input="makeCharts"></v-select>
     </v-flex>
     <div v-if="launches">
       <p class="text-xs-left headline">Total Launches: {{ totalLaunches }}</p>

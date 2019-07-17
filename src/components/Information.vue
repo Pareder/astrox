@@ -2,7 +2,6 @@
   <div class="px-3">
     <div class="mb-5">
       <img class="pa-2 ma-1" src="../../static/astrox.png" alt="AstroX" title="AstroX">
-      <!--<h1 dark class="display-1 pa-2 ma-1">AstroX</h1>-->
       <p class="headline">We provide you the information about all rocket launches</p>
       <p class="subheading grey--text">Select date to see all rocket launches between selected date and today</p>
     </div>

@@ -17,7 +17,7 @@
         Click plus sign<v-icon class="px-1">add</v-icon> on several agencies up to five to compare their launches
       </v-flex>
       <transition-group name="list-complete" tag="div" class="transition_block">
-        <v-flex xs12 sm6 md4 class="pa-2 list-complete-item" v-for="(agency, id) in (sortedAgencies ? sortedAgencies : agencies)" :key="id">
+        <v-flex xs12 sm6 md4 class="pa-2 list-complete-item" v-for="agency in (sortedAgencies ? sortedAgencies : agencies)" :key="agency.id">
           <v-card :color="itemsToCompare.includes(agency.id) ? 'primary' : ''" :dark="itemsToCompare.includes(agency.id) ? true : false">
             <v-card-title class="justify-center">
               <v-btn class="absolute_btn" outline icon @click="compareAgencies(agency.id)">

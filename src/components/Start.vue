@@ -2,32 +2,17 @@
   <v-app :dark="colorTheme === 'dark'">
     <v-navigation-drawer v-model="drawer" clipped fixed app>
       <v-list two-line>
-        <v-list-tile @click="goToPage('/')" active-class="red--text">
-          <v-list-tile-action>
-            <v-icon>home</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title class="title">Home</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-divider></v-divider>
-        <v-list-tile @click="goToPage('/agencies')" active-class="red--text">
-          <v-list-tile-action>
-            <v-icon>business</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title class="title">Agencies</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-divider></v-divider>
-        <v-list-tile @click="goToPage('/charts')" active-class="red--text">
-          <v-list-tile-action>
-            <v-icon>pie_chart</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title class="title">Charts</v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
+        <div v-for="menu in menuItems" :key="menu.name">
+          <v-list-tile @click="goToPage(menu.path)" active-class="red--text">
+            <v-list-tile-action>
+              <v-icon>{{ menu.icon }}</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title class="title">{{ menu.name }}</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-divider></v-divider>
+        </div>
       </v-list>
     </v-navigation-drawer>
     <v-toolbar app dark :color="colorTheme === 'light' ? 'primary' : ''" flat clipped-left>
@@ -50,11 +35,13 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
+import config from '../config'
 import Information from './Information'
 
 export default {
   data () {
     return {
+      menuItems: config.menuItems,
       drawer: false
     }
   },

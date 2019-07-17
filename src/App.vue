@@ -10,9 +10,6 @@ export default {
 }
 </script>
 <style>
-@import '../node_modules/vuetify/dist/vuetify.min.css';
-@import '../node_modules/material-design-icons-iconfont/dist/material-design-icons.css';
-
 * {
   box-sizing: border-box;
 }
@@ -38,6 +35,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   font-display: swap;
+}
+.no-padding .v-responsive__sizer {
+  display: none;
 }
 .v-card__media__content {
   width: 100%;
