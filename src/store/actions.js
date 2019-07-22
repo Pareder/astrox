@@ -215,7 +215,7 @@ const actions = {
         })
     })
     const getContinents = new Promise((resolve, reject) => {
-      Vue.http.get('./static/countries.json')
+      Vue.http.get('/countries.json')
         .then(response => {
           resolve(response.body)
         })

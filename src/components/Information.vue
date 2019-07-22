@@ -1,7 +1,7 @@
 <template>
   <div class="px-3">
     <div class="mb-5">
-      <img class="pa-2 ma-1" src="../../static/astrox.png" alt="AstroX" title="AstroX">
+      <img class="pa-2 ma-1" src="/astrox.png" alt="AstroX" title="AstroX">
       <p class="headline">We provide you the information about all rocket launches</p>
       <p class="subheading grey--text">Select date to see all rocket launches between selected date and today</p>
     </div>
@@ -82,8 +82,7 @@ export default {
           this.launches = this.$store.state.presentYearLaunches
           this.$Progress.finish()
         })
-        .catch(error => {
-          console.log(error)
+        .catch(() => {
           this.$Progress.fail()
         })
     }
@@ -106,10 +105,9 @@ export default {
         .then(response => {
           this.launches = response.body.launches
           this.$Progress.finish()
-        }, response => {
+        }, () => {
           this.error = true
           this.launches = null
-          console.log(response)
           this.$Progress.fail()
         })
     }

@@ -6,6 +6,7 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import VueLazyload from 'vue-lazyload'
 import * as VueGoogleMaps from 'vue2-google-maps'
 import VueProgressBar from 'vue-progressbar'
+import config from './config'
 import store from './store'
 import App from './App'
 import router from './router'
@@ -14,7 +15,7 @@ Vue.use(VueResource)
 Vue.use(Vuetify)
 Vue.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyC9H_ZF0P-ghuts2MmTKxJDOaw7KTSM0AI',
+    key: config.googleMapsKey,
     libraries: 'places'
   }
 })

@@ -17,5 +17,6 @@ export default {
       path: '/charts',
       icon: 'pie_chart'
     }
-  ]
+  ],
+  googleMapsKey: 'AIzaSyC9H_ZF0P-ghuts2MmTKxJDOaw7KTSM0AI'
 }
