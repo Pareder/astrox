@@ -5,6 +5,7 @@
   </div>
 </template>
 <script>
+import config from '../config'
 import Chart from './charts/Chart'
 import LaunchModal from './modals/LaunchModal'
 
@@ -24,13 +25,13 @@ export default {
   methods: {
     getLaunchesByYears () {
       const getAgencyLaunches = new Promise((resolve, reject) => {
-        if (this.$store.state.agenciesLaunches['121'] && this.$store.state.agenciesLaunches['121'].official) {
-          this.launches = this.$store.state.agenciesLaunches['121'].official
+        if (this.$store.state.agenciesLaunches[config.SPACEX_ID] && this.$store.state.agenciesLaunches[config.SPACEX_ID].official) {
+          this.launches = this.$store.state.agenciesLaunches[config.SPACEX_ID].official
           resolve()
         } else {
           this.$store.dispatch('getSpaceXLaunches')
             .then(() => {
-              this.launches = this.$store.state.agenciesLaunches['121'].official
+              this.launches = this.$store.state.agenciesLaunches[config.SPACEX_ID].official
               resolve()
             })
             .catch(error => {

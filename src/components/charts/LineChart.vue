@@ -1,10 +1,14 @@
 <script>
 import { Line, mixins } from 'vue-chartjs'
+import { LIGHT_FONT_COLOR, DARK_FONT_COLOR, LIGHT_GRID_LINES_COLOR, DARK_GRID_LINES_COLOR } from '../../config'
+
 const { reactiveProp } = mixins
 
 export default {
   extends: Line,
+
   mixins: [reactiveProp],
+
   data () {
     return {
       options: {
@@ -41,6 +45,7 @@ export default {
               const allData = data.datasets[tooltipItem.datasetIndex].data
               const tooltipData = allData[tooltipItem.index]
               const tooltipPercentage = (tooltipData / allData.reduce((sum, next) => sum + next) * 100).toFixed(1)
+
               return `Launches: ${tooltipData} (${tooltipPercentage}%)`
             }
           }
@@ -48,6 +53,7 @@ export default {
       }
     }
   },
+
   props: {
     chartData: {
       type: Object
@@ -56,30 +62,40 @@ export default {
       type: String
     }
   },
+
   mounted () {
     this.unwatch = this.$store.watch(
       () => {
-        this.colorTheme = this.$store.getters.getColorTheme
-        return this.$store.getters.getColorTheme
+        this.colorTheme = this.$store.state.colorTheme
+
+        return this.colorTheme
       },
-      (val) => {
-        this.options.title.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
-        this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+      () => {
+        this.setOptionsColor()
         this.renderChart(this.chartData, this.options)
       }
     )
-    this.options.title.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
-    this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+
+    this.setOptionsColor()
     this.renderChart(this.chartData, this.options)
   },
+
   destroyed () {
     this.unwatch()
+  },
+
+  methods: {
+    setOptionsColor () {
+      this.options.title.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ?
+        LIGHT_GRID_LINES_COLOR :
+        DARK_GRID_LINES_COLOR
+      this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ?
+        LIGHT_GRID_LINES_COLOR :
+        DARK_GRID_LINES_COLOR
+    }
   }
 }
 </script>

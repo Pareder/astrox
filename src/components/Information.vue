@@ -16,24 +16,27 @@
       </v-dialog>
     </v-flex>
     <div v-if="launches">
-      <v-chip v-if="new Date(datepicker) < new Date() && datepicker">
-        <v-avatar class="red lighten-1">
-          <v-icon>close</v-icon>
-        </v-avatar>
-        <strong>{{ failedLaunches }}</strong> &nbsp;failed {{ failedLaunches === 1 ? 'launch' : 'launches' }}
-      </v-chip>
-      <v-chip v-if="new Date(datepicker) < new Date() && datepicker">
-        <v-avatar class="light-green accent-4">
-          <v-icon>done</v-icon>
-        </v-avatar>
-        <strong>{{ successfulLaunches }}</strong> &nbsp;successful {{ successfulLaunches === 1 ? 'launch' : 'launches' }}
-      </v-chip>
-      <v-chip v-if="new Date(datepicker) > new Date() || !datepicker">
+      <div v-if="datepicker && new Date(datepicker) < new Date()">
+        <v-chip>
+          <v-avatar class="red lighten-1">
+            <v-icon>close</v-icon>
+          </v-avatar>
+          <strong>{{ failedLaunches }}</strong> &nbsp;failed {{ failedLaunches === 1 ? 'launch' : 'launches' }}
+        </v-chip>
+        <v-chip>
+          <v-avatar class="light-green accent-4">
+            <v-icon>done</v-icon>
+          </v-avatar>
+          <strong>{{ successfulLaunches }}</strong> &nbsp;successful {{ successfulLaunches === 1 ? 'launch' : 'launches' }}
+        </v-chip>
+      </div>
+      <v-chip v-if="!datepicker || new Date(datepicker) > new Date()">
         <v-avatar class="yellow">
           <v-icon>timeline</v-icon>
         </v-avatar>
         <strong>{{ pendingLaunches }}</strong> &nbsp;pending {{ pendingLaunches === 1 ? 'launch' : 'launches' }}
       </v-chip>
+      <LaunchLayout :launches="launches" :past="past" />
     </div>
     <h3 v-if="error">
       <v-chip>
@@ -43,10 +46,12 @@
         No launches in selected period
       </v-chip>
     </h3>
-    <LaunchLayout v-if="launches" :launches="launches" :past="past" />
   </div>
 </template>
+
 <script>
+import API from '../api'
+import { zeroTime, getPendingLaunchesCount, getSuccessfulLaunchesCount, getFailedLaunchesCount } from '../utils'
 import LaunchLayout from './LaunchLayout'
 
 export default {
@@ -54,64 +59,72 @@ export default {
     return {
       launches: null,
       datepicker: null,
-      progressDialog: false,
       dateModal: false,
       error: false,
       past: false
     }
   },
+
   computed: {
     failedLaunches () {
-      return this.launches.filter(item => item.status === 4 || item.failreason).length
+      return getFailedLaunchesCount(this.launches)
     },
+
     successfulLaunches () {
-      return this.launches.filter(item => item.status === 3).length
+      return getSuccessfulLaunchesCount(this.launches)
     },
+
     pendingLaunches () {
-      return this.launches.filter(item => item.status === 1 || item.status === 2).length
+      return getPendingLaunchesCount(this.launches)
     }
   },
+
   created () {
-    this.$Progress.start()
-    if (this.$store.state.presentYearLaunches) {
-      this.launches = this.$store.state.presentYearLaunches
-      this.$Progress.finish()
-    } else {
+    this._api = API.create()
+    this.launches = this.$store.state.presentYearLaunches
+
+    if (!this.launches) {
+      this.$Progress.start()
       this.$store.dispatch('getPresentYearLaunches')
         .then(() => {
           this.launches = this.$store.state.presentYearLaunches
           this.$Progress.finish()
         })
         .catch(() => {
+          this.error = true
           this.$Progress.fail()
         })
     }
   },
+
   methods: {
     changeDate (e) {
-      this.$Progress.start()
       this.error = false
       this.dateModal = false
-      this.progressDialog = true
       const date = isNaN(e) ? new Date(this.datepicker) : e
-      const formattedDate = `${date.getFullYear()}-${date.getMonth() > 8 ? date.getMonth() + 1 : '0' + (date.getMonth() + 1)}-${date.getDate() > 9 ? date.getDate() : '0' + date.getDate()}`
-      const finalYear = `${new Date().getFullYear()}-${new Date().getMonth() > 8 ? new Date().getMonth() + 1 : '0' + (new Date().getMonth() + 1)}-${new Date().getDate() > 9 ? new Date().getDate() : '0' + new Date().getDate()}`
-      if (formattedDate < finalYear) {
+      const startDate = `${date.getFullYear()}-${zeroTime(date.getMonth() + 1)}-${zeroTime(date.getDate())}`
+      const endDate = `${new Date().getFullYear()}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
+
+      if (startDate < endDate) {
         this.past = true
       } else {
         this.past = false
       }
-      this.$http.get(`https://launchlibrary.net/1.4/launch/${formattedDate}/${finalYear}?limit=-1`)
-        .then(response => {
-          this.launches = response.body.launches
+
+      this.$Progress.start()
+      this._api.getLaunchesByDate({ startDate, endDate })
+        .then(launches => {
+          this.launches = launches
           this.$Progress.finish()
-        }, () => {
+        })
+        .catch(() => {
           this.error = true
           this.launches = null
           this.$Progress.fail()
         })
     }
   },
+
   components: {
     LaunchLayout
   }

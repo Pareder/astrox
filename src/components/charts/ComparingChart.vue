@@ -1,11 +1,15 @@
 <script>
 import { Bar, mixins } from 'vue-chartjs'
-import { mapGetters } from 'vuex'
+import { mapState } from 'vuex'
+import { LIGHT_FONT_COLOR, DARK_FONT_COLOR, LIGHT_GRID_LINES_COLOR, DARK_GRID_LINES_COLOR } from '../../config'
+
 const { reactiveProp } = mixins
 
 export default {
   extends: Bar,
+
   mixins: [reactiveProp],
+
   data () {
     return {
       options: {
@@ -47,22 +51,29 @@ export default {
       }
     }
   },
+
   props: {
     chartData: {
       type: Object
     }
   },
+
   computed: {
-    ...mapGetters({
-      colorTheme: 'getColorTheme'
-    })
+    ...mapState([
+      'colorTheme'
+    ])
   },
+
   mounted () {
-    this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
-    this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+    this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+    this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+    this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+    this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ?
+      LIGHT_GRID_LINES_COLOR :
+      DARK_GRID_LINES_COLOR
+    this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ?
+      LIGHT_GRID_LINES_COLOR :
+      DARK_GRID_LINES_COLOR
     this.renderChart(this.chartData, this.options)
   }
 }

@@ -44,41 +44,37 @@
         </v-list>
       </v-card-text>
       <v-card-actions>
-        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="closeDialog">Close</v-btn>
+        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="$emit('closeDialog')">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
+
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'vuex'
 
 export default {
   props: {
     dialog: {
       type: Boolean
     },
-    mutateDialog: {
-      type: Function
-    },
-    closeDialog: {
-      type: Function
-    },
     rocket: {
       type: Object
     }
   },
+
   computed: {
+    ...mapState([
+      'colorTheme'
+    ]),
     localDialog: {
       get () {
         return this.dialog
       },
-      set (newValue) {
-        this.mutateDialog(newValue)
+      set () {
+        this.$emit('closeDialog')
       }
-    },
-    ...mapGetters({
-      colorTheme: 'getColorTheme'
-    })
+    }
   }
 }
 </script>

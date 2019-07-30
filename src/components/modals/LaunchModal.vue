@@ -14,7 +14,14 @@
           </v-avatar>
           No launches in this year
         </v-chip>
-        <v-tabs v-else v-model="activeLaunch" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="yellow" show-arrows>
+        <v-tabs
+          v-else
+          v-model="activeLaunch"
+          :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'"
+          dark
+          slider-color="yellow"
+          show-arrows
+        >
           <v-tab v-for="(launch, id) in launches" :key="id" ripple>
             {{ new Date(launch.launch_date_utc).toLocaleDateString().slice(0, -5) }}
           </v-tab>
@@ -25,11 +32,24 @@
                 <v-layout row wrap>
                   <v-flex xs12 md6>
                     <v-img class="no-padding" :src="launch.links.mission_patch" height="100%" contain>
-                      <v-list three-line class="list-with-bg" :style="`background-color:${colorTheme === 'light' ? 'rgba(255,255,255,0.9)' : 'rgba(66, 66, 66, 0.9)'}; height: 100%`">
+                      <v-list
+                        three-line
+                        class="list-with-bg"
+                        :style="`background-color:${colorTheme === 'light' ?
+                          'rgba(255,255,255,0.9)' :
+                          'rgba(66,66,66,0.9)'}`"
+                      >
                         <v-subheader>Information</v-subheader>
                         <v-list-tile avatar>
                           <v-list-tile-content>
-                            <v-btn large :color="colorTheme === 'light' ? 'primary' : ''" right @click.stop="getRocketDetails(id)">{{ launch.rocket.rocket_name }}</v-btn>
+                            <v-btn
+                              large
+                              :color="colorTheme === 'light' ? 'primary' : ''"
+                              right
+                              @click.stop="getRocketDetails(id)"
+                            >
+                              {{ launch.rocket.rocket_name }}
+                            </v-btn>
                             <v-list-tile-sub-title>Rocket</v-list-tile-sub-title>
                           </v-list-tile-content>
                         </v-list-tile>
@@ -38,7 +58,9 @@
                             <v-icon>access_time</v-icon>
                           </v-avatar>
                           <v-list-tile-content>
-                            <v-list-tile-title>{{ new Date(launch.launch_date_utc).toLocaleString() }}</v-list-tile-title>
+                            <v-list-tile-title>
+                              {{ new Date(launch.launch_date_utc).toLocaleString() }}
+                            </v-list-tile-title>
                             <v-list-tile-sub-title>Launch Date</v-list-tile-sub-title>
                           </v-list-tile-content>
                         </v-list-tile>
@@ -60,7 +82,13 @@
                     </v-img>
                   </v-flex>
                   <v-flex xs12 md6 class="pr-3">
-                    <v-tabs v-model="launch.activeTab" :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'" dark slider-color="lime" icons-and-text>
+                    <v-tabs
+                      v-model="launch.activeTab"
+                      :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'"
+                      dark
+                      slider-color="lime"
+                      icons-and-text
+                    >
                       <v-tab>
                         Map
                         <v-icon>map</v-icon>
@@ -70,21 +98,37 @@
                         <v-icon>videocam</v-icon>
                       </v-tab>
                       <v-tab-item>
-                        <gmap-map :center="launch.location" :zoom="10" style="width:100%;  height: 400px;">
-                          <gmap-marker :position="launch.location" :title="launch.launch_site.site_name_long"></gmap-marker>
+                        <gmap-map :center="launch.location" :zoom="10" class="map">
+                          <gmap-marker
+                            :position="launch.location"
+                            :title="launch.launch_site.site_name_long"
+                          ></gmap-marker>
                         </gmap-map>
                       </v-tab-item>
                       <v-tab-item>
-                        <lazy-component tag="div" style="line-height: 0">
-                          <iframe v-if="launch.links.video_link" width="100%" height="400" frameborder="0" :src="`http://www.youtube.com/embed/${launch.links.video_link.split('v=')[1]}`">
-                          </iframe>
+                        <lazy-component tag="div" class="video">
+                          <iframe
+                            v-if="launch.links.video_link"
+                            width="100%"
+                            height="400"
+                            frameborder="0"
+                            :src="`http://www.youtube.com/embed/${launch.links.video_link.split('v=')[1]}`"
+                          ></iframe>
                         </lazy-component>
                       </v-tab-item>
                     </v-tabs>
                   </v-flex>
-                  <v-flex xs12>
+                  <v-flex xs12 v-if="launch.telemetry.flight_club">
                     <lazy-component tag="div">
-                      <iframe v-if="launch.telemetry.flight_club" class="mt-3 px-2" id="altitude1" title="Inline Frame Example" width="100%" height="600" frameborder="0" :src="launch.telemetry.flight_club"></iframe>
+                      <iframe
+                         class="mt-3 px-2"
+                         id="altitude1"
+                         title="Inline Frame Example"
+                         width="100%"
+                         height="600"
+                         frameborder="0"
+                         :src="launch.telemetry.flight_club"
+                      ></iframe>
                     </lazy-component>
                   </v-flex>
                 </v-layout>
@@ -106,11 +150,16 @@
       </v-card-text>
       <div style="flex: 1 1 auto;"></div>
     </v-card>
-    <RocketModal :dialog="rocketDialog" :closeDialog="closeRocketDialog" :mutateDialog="mutateRocketDialog" :rocket="rocket" />
+    <RocketModal
+      :dialog="rocketDialog"
+      @closeDialog="closeRocketDialog"
+      :rocket="rocket"
+    />
   </v-dialog>
 </template>
+
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'vuex'
 import LaunchLayout from '../LaunchLayout'
 import RocketModal from './RocketModal'
 
@@ -122,6 +171,7 @@ export default {
       rocketDialog: false
     }
   },
+
   props: {
     launches: {
       type: Array
@@ -145,47 +195,58 @@ export default {
       type: Boolean
     }
   },
+
   computed: {
-    ...mapGetters({
-      colorTheme: 'getColorTheme'
-    })
+    ...mapState([
+      'colorTheme'
+    ])
   },
+
   methods: {
     close () {
       this.activeLaunch = 0
       this.closeDialog()
     },
+
     getRocketDetails (id) {
       const name = this.launches[id].rocket.rocket_name.replace(' ', '').toLowerCase()
+
       if (this.$store.state.rockets[name]) {
         this.rocket = { ...this.$store.state.rockets[name] }
         this.rocketDialog = true
       } else {
+        this.$Progress.start()
         this.$store.dispatch('getRocket', name)
           .then(() => {
             this.rocket = { ...this.$store.state.rockets[name] }
             this.rocketDialog = true
+            this.$Progress.finish()
           })
-          .catch(error => {
-            console.log(error)
+          .catch(() => {
+            this.$Progress.fail()
           })
       }
     },
+
     closeRocketDialog () {
       this.rocketDialog = false
-    },
-    mutateRocketDialog (newValue) {
-      this.rocketDialog = newValue
     }
   },
+
   components: {
     LaunchLayout,
     RocketModal
   }
 }
 </script>
-<style>
-.list-with-bg {
-  width: 100%;
-}
+
+<style scoped>
+  .list-with-bg {
+    width: 100%;
+    heiight: 100%;
+  }
+  .map {
+    width: 100%;
+    height: 400px;
+  }
 </style>

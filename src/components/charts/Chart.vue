@@ -1,8 +1,10 @@
 <script>
 import { Bar } from 'vue-chartjs'
+import { LIGHT_FONT_COLOR, DARK_FONT_COLOR, LIGHT_GRID_LINES_COLOR, DARK_GRID_LINES_COLOR } from '../../config'
 
 export default {
   extends: Bar,
+
   data () {
     return {
       datacollection: {
@@ -35,8 +37,9 @@ export default {
           callbacks: {
             label: (tooltipItem, data) => {
               const tooltipData = tooltipItem.yLabel
-              const tooltipPercentage = parseFloat((tooltipData / data.datasets[1].data[tooltipItem.index] * 100).toFixed(1))
-              return `${data.datasets[tooltipItem.datasetIndex].label}: ${tooltipData} (${tooltipPercentage}%)`
+              const percentage = parseFloat((tooltipData / data.datasets[1].data[tooltipItem.index] * 100).toFixed(1))
+
+              return `${data.datasets[tooltipItem.datasetIndex].label}: ${tooltipData} (${percentage}%)`
             }
           }
         },
@@ -78,6 +81,7 @@ export default {
       unwatch: null
     }
   },
+
   props: {
     openDialog: {
       type: Function
@@ -89,32 +93,41 @@ export default {
       type: String
     }
   },
+
   mounted () {
     this.unwatch = this.$store.watch(
       () => {
-        this.colorTheme = this.$store.getters.getColorTheme
-        return this.$store.getters.getColorTheme
+        this.colorTheme = this.$store.state.colorTheme
+
+        return this.colorTheme
       },
-      (val) => {
-        this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
-        this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+      () => {
+        this.setOptionsColor()
         this.renderChart(this.datacollection, this.options)
       }
     )
-    this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
-    this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.1)'
+
+    this.setOptionsColor()
     this.renderChart(this.datacollection, this.options)
   },
+
   destroyed () {
     this.unwatch()
   },
+
   methods: {
+    setOptionsColor () {
+      this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.scales.xAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.scales.yAxes[0].ticks.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.scales.xAxes[0].gridLines.color = this.colorTheme === 'dark' ?
+        LIGHT_GRID_LINES_COLOR :
+        DARK_GRID_LINES_COLOR
+      this.options.scales.yAxes[0].gridLines.color = this.colorTheme === 'dark' ?
+        LIGHT_GRID_LINES_COLOR :
+        DARK_GRID_LINES_COLOR
+    },
+
     chartClicked (evt, item) {
       if (item[0]) {
         this.yearClicked = +item[0]['_model'].label

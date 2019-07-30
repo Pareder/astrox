@@ -33,10 +33,14 @@
     </v-content>
   </v-app>
 </template>
+
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'vuex'
 import config from '../config'
 import Information from './Information'
+
+const YELLOW_COLOR = '#D2D219'
+const BLUE_COLOR = '#1976D2'
 
 export default {
   data () {
@@ -45,37 +49,45 @@ export default {
       drawer: false
     }
   },
+
   computed: {
-    ...mapGetters({
-      colorTheme: 'getColorTheme'
-    })
+    ...mapState([
+      'colorTheme'
+    ])
   },
+
   filters: {
     capitalize (value) {
       if (!value) return ''
       value = value.split('/')
       value.splice(0, 1)
       value = value.map(item => item.charAt(0).toUpperCase() + item.slice(1))
+
       return value.join(' / ')
     }
   },
+
   watch: {
     colorTheme (val) {
-      this.$vuetify.theme.primary = val === 'dark' ? '#D2D219' : '#1976D2'
+      this.$vuetify.theme.primary = val === 'dark' ? YELLOW_COLOR : BLUE_COLOR
     }
   },
+
   created () {
-    this.$vuetify.theme.primary = this.colorTheme === 'dark' ? '#D2D219' : '#1976D2'
+    this.$vuetify.theme.primary = this.colorTheme === 'dark' ? YELLOW_COLOR : BLUE_COLOR
   },
+
   methods: {
     goToPage (page) {
       this.drawer = false
       this.$router.push(page)
     },
+
     changeTheme (color) {
       this.$store.commit('SET_COLOR_THEME', color)
     }
   },
+
   components: {
     Information
   }

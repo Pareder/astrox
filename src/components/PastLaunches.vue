@@ -1,9 +1,23 @@
 <template>
   <div>
-    <Chart v-if="launchesByYears" style="min-height: 75vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="agencyAbbrev" />
-    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :agencyName="agencyName" :past="true" />
+    <Chart
+      v-if="launchesByYears"
+      class="chart"
+      :openDialog="openDialog"
+      :launches="launchesByYears"
+      :agencyAbbrev="agencyAbbrev"
+    />
+    <LaunchModal
+      :closeDialog="closeDialog"
+      :dialog="dialog"
+      :launches="launchesByYearClicked"
+      :year="year"
+      :agencyName="agencyName"
+      :past="true"
+    />
   </div>
 </template>
+
 <script>
 import { mapGetters } from 'vuex'
 import Chart from './charts/Chart'
@@ -19,6 +33,7 @@ export default {
       launchesByYearClicked: null
     }
   },
+
   props: {
     agencyId: {
       type: Number
@@ -30,30 +45,29 @@ export default {
       type: String
     }
   },
+
   computed: {
     ...mapGetters([
       'agencyPastLaunches'
     ])
   },
+
   created () {
     this.getLaunchesByYears()
   },
+
   methods: {
     getLaunchesByYears () {
-      this.$Progress.start()
-      const getAgencyLaunches = new Promise((resolve, reject) => {
+      const getAgencyLaunches = new Promise(resolve => {
         if (this.$store.state.agenciesLaunches[this.agencyId]) {
-          this.launches = this.agencyPastLaunches(this.agencyId)
-          resolve()
+          resolve(this.agencyPastLaunches(this.agencyId))
         } else {
           this.$store.dispatch('getAgencyAllLaunches', this.agencyId)
             .then(() => {
-              this.launches = this.agencyPastLaunches(this.agencyId)
-              resolve()
+              resolve(this.agencyPastLaunches(this.agencyId))
             })
-            .catch(error => {
-              resolve()
-              console.log(error)
+            .catch(() => {
+              resolve(null)
             })
         }
       })
@@ -66,44 +80,69 @@ export default {
               resolve(this.$store.state.history)
             })
             .catch(error => {
-              console.log(error.msg)
+              reject(error.msg)
             })
         }
       })
+
+      this.$Progress.start()
       Promise.all([getAgencyLaunches, getHistory])
-        .then(values => {
-          this.launchesByYears = {}
-          values[1].map(item => {
-            this.launchesByYears[item.year] = { agency: this.calcCountByYear(item.year), total: item.amount }
-          })
+        .then(([agencyLaunches, history]) => {
+          this.launches = agencyLaunches
+          this.setLaunchesByYear(history)
           this.$Progress.finish()
         })
-        .catch(error => {
-          console.log(error)
+        .catch(() => {
           this.$Progress.fail()
         })
     },
-    calcCountByYear (year) {
-      return this.launches.length > 0 ? this.launches.filter(item => {
-        return new Date(item.net).getFullYear() === year && new Date(item.net).getTime() < Date.now()
-      }).length : 0
+
+    setLaunchesByYear (history) {
+      this.launchesByYears = history.reduce((obj, byYear) => {
+        obj[byYear.year] = {
+          agency: 0,
+          total: byYear.amount
+        }
+
+        return obj
+      }, {})
+
+      if (this.launches.length) {
+        for (const launch of this.launches) {
+          const year = new Date(launch.net).getFullYear()
+
+          if (this.launchesByYears[year] && new Date(launch.net).getTime() < Date.now()) {
+            ++this.launchesByYears[year].agency
+          }
+        }
+      }
     },
+
     openDialog (year) {
       this.launchesByYearClicked = this.launches.filter(item => {
         if (new Date(item.net).getFullYear() === year && new Date(item.net).getTime() < Date.now()) {
           return item
         }
       })
+
       this.year = year
       this.dialog = true
     },
+
     closeDialog () {
       this.dialog = false
     }
   },
+
   components: {
     Chart,
     LaunchModal
   }
 }
 </script>
+
+<style scoped>
+  .chart {
+    min-height: 75vh;
+  }
+</style>

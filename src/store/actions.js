@@ -5,7 +5,6 @@ import config from '../config'
 import { zeroTime } from '../utils'
 
 const NUMBER_OF_DAYS_BEFORE = 3
-const SPACEX_ID = 121
 
 const actions = {
   getHistory ({ commit }) {
@@ -271,13 +270,13 @@ const actions = {
   getSpaceXLaunches ({ commit }) {
     const agenciesLaunches = JSON.parse(localStorage.getItem('agenciesLaunches'))
 
-    if (agenciesLaunches && agenciesLaunches[SPACEX_ID] && agenciesLaunches[SPACEX_ID].official) {
-      if (new Date(agenciesLaunches[SPACEX_ID].changed) > new Date().setDate(new Date().getDate() - 7)) {
+    if (agenciesLaunches && agenciesLaunches[config.SPACEX_ID] && agenciesLaunches[config.SPACEX_ID].official) {
+      if (new Date(agenciesLaunches[config.SPACEX_ID].changed) > new Date().setDate(new Date().getDate() - 7)) {
         return new Promise((resolve) => {
           commit(types.SET_AGENCY_LAUNCHES, {
-            id: 121,
-            data: agenciesLaunches[SPACEX_ID].launches,
-            official: agenciesLaunches[SPACEX_ID].official
+            id: config.SPACEX_ID,
+            data: agenciesLaunches[config.SPACEX_ID].launches,
+            official: agenciesLaunches[config.SPACEX_ID].official
           })
           resolve()
         })
@@ -288,7 +287,7 @@ const actions = {
       Vue.http.get(url.format({
         pathname: `${config.apiServer}/launch`,
         query: {
-          lsp: SPACEX_ID,
+          lsp: config.SPACEX_ID,
           limit: -1
         }
       }))
@@ -322,7 +321,7 @@ const actions = {
       Promise.all([getAllLaunches, getOfficialLaunches, getLocations])
         .then(values => {
           commit(types.SET_AGENCY_LAUNCHES, {
-            id: 121,
+            id: config.SPACEX_ID,
             data: values[0],
             official: values[1],
             locations: values[2],
@@ -396,7 +395,7 @@ const actions = {
 
     if (launches && new Date(launches[0].net) > Date.now()) {
       return new Promise((resolve) => {
-        commit(types.SET_PRESENT_YEAR_LAUNCHES, {data: launches})
+        commit(types.SET_PRESENT_YEAR_LAUNCHES, { data: launches })
         resolve()
       })
     }

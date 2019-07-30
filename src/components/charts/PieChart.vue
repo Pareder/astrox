@@ -1,10 +1,14 @@
 <script>
 import { Pie, mixins } from 'vue-chartjs'
+import { LIGHT_FONT_COLOR, DARK_FONT_COLOR } from '../../config'
+
 const { reactiveProp } = mixins
 
 export default {
   extends: Pie,
+
   mixins: [reactiveProp],
+
   data () {
     return {
       options: {
@@ -28,6 +32,7 @@ export default {
               const allData = data.datasets[tooltipItem.datasetIndex].data
               const tooltipData = allData[tooltipItem.index]
               const tooltipPercentage = (tooltipData / allData.reduce((sum, next) => sum + next) * 100).toFixed(1)
+
               return `${data.labels[tooltipItem.index]}: ${tooltipData} (${tooltipPercentage}%)`
             }
           }
@@ -36,6 +41,7 @@ export default {
       unwatch: null
     }
   },
+
   props: {
     chartData: {
       type: Object
@@ -50,24 +56,33 @@ export default {
       type: String
     }
   },
+
   mounted () {
     this.unwatch = this.$store.watch(
       () => {
-        this.colorTheme = this.$store.getters.getColorTheme
-        return this.$store.getters.getColorTheme
+        this.colorTheme = this.$store.state.colorTheme
+
+        return this.colorTheme
       },
-      (val) => {
-        this.options.title.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-        this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+      () => {
+        this.setOptionsColor()
         this.renderChart(this.chartData, this.options)
       }
     )
-    this.options.title.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
-    this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? '#ddd' : '#666'
+
+    this.setOptionsColor()
     this.renderChart(this.chartData, this.options)
   },
+
   destroyed () {
     this.unwatch()
+  },
+
+  methods: {
+    setOptionsColor () {
+      this.options.title.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+      this.options.legend.labels.fontColor = this.colorTheme === 'dark' ? LIGHT_FONT_COLOR : DARK_FONT_COLOR
+    }
   }
 }
 </script>

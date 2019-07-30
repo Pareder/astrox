@@ -13,7 +13,9 @@
           <v-data-table :headers="launchHeaders" :items="launchStats" hide-actions class="elevation-1">
             <template slot="headers" slot-scope="props">
               <th :width="'20%'"></th>
-              <th v-for="(header, id) in props.headers" :key="id" :style="`color: ${colors[id]}`" class="subheading">{{ header.text }}</th>
+              <th v-for="(header, id) in props.headers" :key="id" :style="`color: ${colors[id]}`" class="subheading">
+                {{ header.text }}
+              </th>
             </template>
             <template slot="items" slot-scope="props">
               <td v-for="(agency, id) in props.item" :key="id" :class="agency">
@@ -23,7 +25,7 @@
           </v-data-table>
         </v-flex>
         <v-layout wrap justify-space-around class="mt-3">
-          <v-flex xs12 sm6 md4 v-for="(name, id) in names" :key="id" v-if="comparingAgenciesLaunches[id].length > 0">
+          <v-flex xs12 sm6 md4 v-for="(name, id) in agencyNameWithLaunches" :key="id" >
             <PieChart :chartData="getPieChartData(id)" :title="name" :noLegend="true" />
           </v-flex>
         </v-layout>
@@ -31,18 +33,27 @@
     </v-card>
   </v-dialog>
 </template>
+
 <script>
-import { mapGetters } from 'vuex'
+import { mapState } from 'vuex'
+import { getSuccessfulLaunchesCount, getPendingLaunchesCount, getFailedLaunchesCount } from '../../utils'
 import ComparingChart from '../charts/ComparingChart'
 import PieChart from '../charts/PieChart'
+
+const CYAN_COLOR = '#00BCD4'
+const GREEN_COLOR = '#41B883'
+const RED_COLOR = '#FF5722'
+const PURPLE_COLOR = '#BA68C8'
+const YELLOW_COLOR = '#FBC02D'
 
 export default {
   data () {
     return {
-      colors: ['#00BCD4', '#41B883', '#FF5722', '#BA68C8', '#FBC02D'],
+      colors: [CYAN_COLOR, GREEN_COLOR, RED_COLOR, PURPLE_COLOR, YELLOW_COLOR],
       years: null
     }
   },
+
   props: {
     dialog: {
       type: Boolean
@@ -57,7 +68,12 @@ export default {
       type: Array
     }
   },
+
   computed: {
+    ...mapState([
+      'colorTheme'
+    ]),
+
     localDialog: {
       get () {
         return this.dialog
@@ -66,9 +82,7 @@ export default {
         this.closeDialog()
       }
     },
-    ...mapGetters({
-      colorTheme: 'getColorTheme'
-    }),
+
     getChartData () {
       return {
         labels: this.years,
@@ -77,24 +91,23 @@ export default {
             label: item,
             backgroundColor: this.colors[id],
             borderWidth: 0,
-            borderColor: '#00869e',
             data: this.getYearData(id)
           }
         })
       }
     },
+
     launchHeaders () {
       return [
-        ...this.names.map(item => {
-          return {
-            text: item,
-            sortable: false,
-            width: `${80 / this.names.length}%`,
-            align: 'center'
-          }
-        })
+        ...this.names.map(item => ({
+          text: item,
+          sortable: false,
+          width: `${80 / this.names.length}%`,
+          align: 'center'
+        }))
       ]
     },
+
     launchStats () {
       const total = {
         name: 'total'
@@ -109,27 +122,45 @@ export default {
         name: 'pending'
       }
       this.comparingAgenciesLaunches.map((item, id) => {
+        const successfulLaunches = this.getSuccessfulLaunches(id)
+        const failedLaunches = this.getFailedLaunches(id)
+        const pendingLaunches = this.getPendingLaunches(id)
+
         total[`agency${id}`] = item.length
-        successful[`agency${id}`] = total[`agency${id}`] ? (this.getSuccessfulLaunches(id) + ' (' + (this.getSuccessfulLaunches(id) / total[`agency${id}`] * 100).toFixed(1) + '%)') : 0
-        failed[`agency${id}`] = total[`agency${id}`] ? (this.getFailedLaunches(id) + ' (' + (this.getFailedLaunches(id) / total[`agency${id}`] * 100).toFixed(1) + '%)') : 0
-        pending[`agency${id}`] = total[`agency${id}`] ? (this.getPendingLaunches(id) + ' (' + (this.getPendingLaunches(id) / total[`agency${id}`] * 100).toFixed(1) + '%)') : 0
+        successful[`agency${id}`] = item.length ?
+          `${successfulLaunches} (${(successfulLaunches / total[`agency${id}`] * 100).toFixed(1)}%)` :
+          0
+        failed[`agency${id}`] = item.length ?
+          `${failedLaunches} (${(failedLaunches / total[`agency${id}`] * 100).toFixed(1)}%)` :
+          0
+        pending[`agency${id}`] = item.length ?
+          `${pendingLaunches} (${(pendingLaunches / total[`agency${id}`] * 100).toFixed(1)}%)` :
+          0
       })
+
       return [
         total,
         successful,
         failed,
         pending
       ]
+    },
+
+    agencyNameWithLaunches () {
+      return this.names.filter((name, id) => this.comparingAgenciesLaunches[id].length)
     }
   },
+
   filters: {
     capitalize (value) {
       if (typeof value === 'string') {
         return value.charAt(0).toUpperCase() + value.slice(1)
       }
+
       return value
     }
   },
+
   watch: {
     dialog (newVal) {
       if (newVal) {
@@ -137,20 +168,31 @@ export default {
       }
     }
   },
+
   methods: {
     calculateYears () {
       const yearsSet = [...new Set(this.comparingAgenciesLaunches.flat().map(item => new Date(item.net).getFullYear()))]
-      const minYear = Math.min.apply(null, yearsSet)
-      const maxYear = Math.max.apply(null, yearsSet)
-      const years = []
-      for (let i = minYear; i <= maxYear; i++) {
-        years.push(i)
-      }
-      this.years = [...years]
+      this.years = yearsSet.sort((yearOne, yearTwo) => yearOne - yearTwo)
     },
+
     getYearData (id) {
-      return this.years.map(year => this.comparingAgenciesLaunches[id].filter(item => new Date(item.net).getFullYear() === year).length)
+      const launchesByYear = this.years.reduce((obj, year) => {
+        obj[year] = 0
+
+        return obj
+      }, {})
+
+      for (const launch of this.comparingAgenciesLaunches[id]) {
+        const year = new Date(launch.net).getFullYear()
+
+        if (launchesByYear.hasOwnProperty(year)) {
+          ++launchesByYear[year]
+        }
+      }
+
+      return Object.values(launchesByYear)
     },
+
     getPieChartData (id) {
       return {
         labels: ['Successful', 'Failed', 'Pending'],
@@ -163,36 +205,41 @@ export default {
         ]
       }
     },
+
     getSuccessfulLaunches (id) {
-      return this.comparingAgenciesLaunches[id].filter(item => item.status === 3).length
+      return getSuccessfulLaunchesCount(this.comparingAgenciesLaunches[id])
     },
+
     getFailedLaunches (id) {
-      return this.comparingAgenciesLaunches[id].filter(item => item.status === 4 || item.failreason).length
+      return getFailedLaunchesCount(this.comparingAgenciesLaunches[id])
     },
+
     getPendingLaunches (id) {
-      return this.comparingAgenciesLaunches[id].filter(item => item.status === 1 || item.status === 2).length
+      return getPendingLaunchesCount(this.comparingAgenciesLaunches[id])
     }
   },
+
   components: {
     ComparingChart,
     PieChart
   }
 }
 </script>
+
 <style scoped>
-.text--blue {
-  color: #00C3E6;
-}
-.text--green {
-  color: #41B883;
-}
-.successful {
-  color: #64DD17;
-}
-.failed {
-  color: #EF5350;
-}
-.pending {
-  color: #FFC107;
-}
+  .text--blue {
+    color: #00C3E6;
+  }
+  .text--green {
+    color: #41B883;
+  }
+  .successful {
+    color: #64DD17;
+  }
+  .failed {
+    color: #EF5350;
+  }
+  .pending {
+    color: #FFC107;
+  }
 </style>

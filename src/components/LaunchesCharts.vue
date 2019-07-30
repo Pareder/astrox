@@ -1,7 +1,15 @@
 <template>
   <v-container fluid>
     <v-flex xs12 sm6 offset-sm3>
-      <v-select outline menu-props="auto" :loading="loading" :items="getYears" label="Select a year to see companies' launches" v-model="chosenYear" @input="makeCharts"></v-select>
+      <v-select
+        outline
+        menu-props="auto"
+        :loading="loading"
+        :items="getYears"
+        label="Select a year to see companies' launches"
+        v-model="chosenYear"
+        @input="makeCharts"
+      />
     </v-flex>
     <div v-if="launches">
       <p class="text-xs-left headline">Total Launches: {{ totalLaunches }}</p>
@@ -48,74 +56,109 @@
     </h3>
   </v-container>
 </template>
+
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
+import config from '../config'
+import {
+  getPendingLaunchesCount,
+  getSuccessfulLaunchesCount,
+  getFailedLaunchesCount,
+  getContrastColors,
+  getContrastColor,
+  getAlphaColor
+} from '../utils'
 import HorizontalBarChart from './charts/HorizontalBarChart'
 import PieChart from './charts/PieChart'
 import LineChart from './charts/LineChart'
 import RadarChart from './charts/RadarChart'
 
+const MINIMUM_YEAR = 1980
+const MAXIMUM_YEAR = new Date().getFullYear() + 12
+
 export default {
   data () {
     return {
-      chosenYear: new Date().getFullYear(),
       launches: null,
-      agencies: null,
+      chosenYear: new Date().getFullYear(),
       loading: false,
       error: false,
       agenciesReady: false
     }
   },
+
   computed: {
+    ...mapState([
+      'colorTheme'
+    ]),
+
     ...mapGetters({
-      yearLaunches: 'yearLaunches',
-      colorTheme: 'getColorTheme'
+      agencies: 'agencyObject',
+      historyLaunchesByYear: 'historyLaunchesByYear'
     }),
+
     failedLaunches () {
-      return this.launches.filter(item => item.status === 4 || item.failreason).length
+      return getFailedLaunchesCount(this.launches)
     },
+
     successfulLaunches () {
-      return this.launches.filter(item => item.status === 3).length
+      return getSuccessfulLaunchesCount(this.launches)
     },
+
     pendingLaunches () {
-      return this.launches.filter(item => item.status === 1 || item.status === 2).length
+      return getPendingLaunchesCount(this.launches)
     },
+
     getLaunchesByAgencyType () {
       const launchesByAgencyType = {}
-      const unique = [...new Set(this.launches.map(item => this.agencies[item.lsp] && this.agencies[item.lsp].type).filter(item => item))]
-      unique.map(type => {
-        launchesByAgencyType[type] = this.launches.filter(item => this.agencies[item.lsp] && this.agencies[item.lsp].type === type).length
-      })
+
+      for (const launch of this.launches) {
+        if (this.agencies[launch.lsp] && this.agencies[launch.lsp].type) {
+          if (!launchesByAgencyType[this.agencies[launch.lsp].type]) {
+            launchesByAgencyType[this.agencies[launch.lsp].type] = 0
+          }
+
+          ++launchesByAgencyType[this.agencies[launch.lsp].type]
+        }
+      }
+
       return launchesByAgencyType
     },
+
     getYears () {
       const years = []
-      for (let i = 1980; i < new Date().getFullYear() + 12; i++) {
+
+      for (let i = MINIMUM_YEAR; i < MAXIMUM_YEAR; i++) {
         years.push(i)
       }
+
       return years
     },
+
     totalLaunches () {
       return this.launches ? this.launches.length : 0
     },
+
     getPieChartData () {
-      const launchesCount = this.getLaunchesCountBy('lsp')
+      const launchesCount = this.getLaunchesCountBy('name')
+
       return {
         labels: launchesCount.labels,
         datasets: [
           {
-            backgroundColor: this.getColors(launchesCount.data.length),
+            backgroundColor: getContrastColors(launchesCount.data.length, this.bgColor),
             borderWidth: 0,
             data: launchesCount.data
           }
         ]
       }
     },
+
     getLineChartData () {
-      const color = this.randomColor()
-      const alphaColor = color.slice(0, 3) + 'a' + color.slice(3, -1) + ',0.5)'
+      const color = getContrastColor(this.bgColor)
+
       return {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        labels: config.months,
         datasets: [
           {
             label: 'Launches',
@@ -123,22 +166,23 @@ export default {
             borderColor: color,
             fill: true,
             fillOpacity: 0.5,
-            backgroundColor: alphaColor,
+            backgroundColor: getAlphaColor(color),
             pointBorderWidth: 5
           }
         ]
       }
     },
+
     getRadarChartData () {
-      const color = this.randomColor()
-      const alphaColor = color.slice(0, 3) + 'a' + color.slice(3, -1) + ',0.5)'
+      const color = getContrastColor(this.bgColor)
+
       return {
-        labels: ['Europe', 'Asia', 'North America', 'Africa', 'South America', 'Oceania'],
+        labels: config.continents,
         datasets: [
           {
             label: 'Launches',
             fill: true,
-            backgroundColor: alphaColor,
+            backgroundColor: getAlphaColor(color),
             borderColor: color,
             data: this.createRadarData,
             pointRadius: 5,
@@ -147,90 +191,111 @@ export default {
         ]
       }
     },
+
     getHorizontalBarChartData () {
       const launchesCount = this.getLaunchesCountBy('countryName')
+
       return {
         labels: launchesCount.labels,
         datasets: [
           {
             label: 'Launches',
-            backgroundColor: this.getColors(launchesCount.data.length),
+            backgroundColor: getContrastColors(launchesCount.data.length, this.bgColor),
             data: launchesCount.data
           }
         ]
       }
     },
+
     createLineData () {
-      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-      return months.map(month => {
+      return config.months.map(month => {
         return this.launches.filter(item => item.net.includes(month)).length
       })
     },
+
     createRadarData () {
-      const continents = ['Europe', 'Asia', 'North America', 'Africa', 'South America', 'Oceania']
-      return continents.map(continent => {
+      return config.continents.map(continent => {
         return this.launches.filter(item => {
           return this.agencies[item.lsp] && this.agencies[item.lsp].continent === continent
         }).length
       })
     },
+
     getDaysChartData () {
-      const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-      const daysData = days.map((day, id) => {
-        return this.launches.filter(item => {
-          return (new Date(item.net).getDay() || 7) === id + 1
-        }).length
-      })
-      const color = this.randomColor()
-      const alphaColor = color.slice(0, 3) + 'a' + color.slice(3, -1) + ',0.5)'
+      const daysData = {}
+      const color = getContrastColor(this.bgColor)
+
+      for (const launch of this.launches) {
+        const day = new Date(launch.net).getDay()
+
+        if (!daysData[day]) {
+          daysData[day] = 0
+        }
+
+        ++daysData[day]
+      }
+
       return {
-        labels: days,
+        labels: config.days,
         datasets: [
           {
             label: 'Launches',
-            data: daysData,
+            data: Object.values(daysData),
             borderColor: color,
             fill: true,
             fillOpacity: 0.5,
-            backgroundColor: alphaColor,
+            backgroundColor: getAlphaColor(color),
             pointBorderWidth: 5
           }
         ]
       }
     },
+
     getTimeChartData () {
-      const time = ['Night (8 PM - 6 AM)', 'Morning (6 AM - 12 AM)', 'Afternoon (12 AM - 5 PM)', 'Evening (5 PM - 8 PM)']
-      const timeData = time.map((timeName, id) => {
-        return this.launches.filter(item => {
-          const launchTime = new Date(item.net).getUTCHours()
-          let launchTimeID = null
-          if (launchTime >= 20 || launchTime < 6) {
-            launchTimeID = 0
-          } else if (launchTime >= 6 && launchTime < 12) {
-            launchTimeID = 1
-          } else if (launchTime >= 12 && launchTime < 17) {
-            launchTimeID = 2
-          } else if (launchTime >= 17 && launchTime < 20) {
-            launchTimeID = 3
-          }
-          return launchTimeID === id
-        }).length
-      })
+      const timeData = {}
+
+      for (const launch of this.launches) {
+        const launchTime = new Date(launch.net).getUTCHours()
+        let launchTimeID = null
+
+        if (launchTime >= 20 || launchTime < 6) {
+          launchTimeID = 0
+        } else if (launchTime >= 6 && launchTime < 12) {
+          launchTimeID = 1
+        } else if (launchTime >= 12 && launchTime < 17) {
+          launchTimeID = 2
+        } else if (launchTime >= 17 && launchTime < 20) {
+          launchTimeID = 3
+        }
+
+        if (!timeData[launchTimeID]) {
+          timeData[launchTimeID] = 0
+        }
+
+        ++timeData[launchTimeID]
+      }
+
       return {
-        labels: time,
+        labels: config.timeRange,
         datasets: [
           {
-            backgroundColor: this.getColors(time.length),
+            backgroundColor: getContrastColors(config.timeRange.length, this.bgColor),
             borderWidth: 0,
-            data: timeData
+            data: Object.values(timeData)
           }
         ]
       }
+    },
+
+    bgColor () {
+      return this.colorTheme === 'dark' ? [48, 48, 48] : [250, 250, 250]
     }
   },
+
   created () {
     this.makeCharts()
   },
+
   methods: {
     makeCharts () {
       this.$Progress.start()
@@ -266,81 +331,38 @@ export default {
 
       Promise.all([getYearLaunches, getAgenciesInfo])
         .then(() => {
-          this.launches = this.$store.state.historyLaunches[this.chosenYear].launches
-          this.getAgencies()
+          this.launches = this.historyLaunchesByYear(this.chosenYear)
+          this.agenciesReady = true
+          this.loading = false
+          this.$Progress.finish()
         })
-        .catch(error => {
+        .catch(() => {
           this.launches = null
           this.error = true
-          console.log(error)
           this.$Progress.fail()
         })
     },
-    getAgencies () {
-      this.agencies = {}
-      this.$store.state.agencies.map(item => {
-        this.agencies[item.id] = {
-          name: item.name,
-          continent: item.continent,
-          countryName: item.countryName,
-          type: item.type
-        }
-      })
-      this.agenciesReady = true
-      this.loading = false
-    },
+
     getLaunchesCountBy (arg) {
-      let unique = []
-      let uniqueData = {}
-      if (arg === 'countryName') {
-        unique = [...new Set(this.launches.map(item => this.agencies[item.lsp] && this.agencies[item.lsp].countryName).filter(item => item))]
-        for (let i = 0; i < unique.length; i++) {
-          uniqueData[unique[i]] = this.launches.filter(item => this.agencies[item.lsp] && this.agencies[item.lsp].countryName === unique[i]).length
-        }
-      } else if (arg === 'lsp') {
-        unique = [...new Set(this.launches.map(item => item[arg]))]
-        for (let i = 0; i < unique.length; i++) {
-          uniqueData[this.agencies[unique[i]] ? this.agencies[unique[i]].name : 'unknown'] = this.launches.filter(item => item[arg] === unique[i]).length
+      const uniqueData = {}
+
+      for (const launch of this.launches) {
+        if (this.agencies[launch.lsp] && this.agencies[launch.lsp][arg]) {
+          if (!uniqueData[this.agencies[launch.lsp][arg]]) {
+            uniqueData[this.agencies[launch.lsp][arg]] = 0
+          }
+
+          ++uniqueData[this.agencies[launch.lsp][arg]]
         }
       }
-      this.$Progress.finish()
+
       return {
         labels: Object.keys(uniqueData).sort((a, b) => uniqueData[b] - uniqueData[a]),
         data: Object.values(uniqueData).sort((a, b) => b - a)
       }
-    },
-    getColors (argLength) {
-      const colors = []
-      for (let i = 0; i < argLength; i++) {
-        colors.push(this.randomColor())
-      }
-      return colors
-    },
-    randomColor () {
-      const bgColor = this.colorTheme === 'dark' ? [48, 48, 48] : [250, 250, 250]
-      const randomColor = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)]
-      if (this.contrast(randomColor, bgColor) < 3) {
-        return this.randomColor()
-      }
-      return `rgb(${randomColor[0]},${randomColor[1]},${randomColor[2]})`
-    },
-    luminanace (rgb) {
-      const a = rgb.map(color => {
-        color /= 255
-        return color <= 0.03928 ? color / 12.92 : Math.pow((color + 0.055) / 1.055, 2.4)
-      })
-      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722
-    },
-    contrast (rgb1, rgb2) {
-      const luminanceFirst = this.luminanace(rgb1) + 0.05
-      const luminanceSecond = this.luminanace(rgb2) + 0.05
-
-      if (luminanceFirst > luminanceSecond) {
-        return luminanceFirst / luminanceSecond
-      }
-      return luminanceSecond / luminanceFirst
     }
   },
+
   components: {
     HorizontalBarChart,
     PieChart,
