@@ -10,6 +10,7 @@ import config from './config'
 import store from './store'
 import App from './App'
 import router from './router'
+import plugins from './plugins'
 
 Vue.use(VueResource)
 Vue.use(Vuetify)
@@ -27,6 +28,7 @@ Vue.use(VueProgressBar, {
   failedColor: '#F44336',
   thickness: '3px'
 })
+Vue.use(plugins)
 
 Vue.config.productionTip = false
 
