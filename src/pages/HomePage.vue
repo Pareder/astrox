@@ -52,7 +52,7 @@
 <script>
 import API from '../api'
 import { zeroTime, getPendingLaunchesCount, getSuccessfulLaunchesCount, getFailedLaunchesCount } from '../utils'
-import LaunchLayout from './LaunchLayout'
+import LaunchLayout from '../components/LaunchLayout'
 
 export default {
   data () {

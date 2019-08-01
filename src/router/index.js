@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Start from '@/components/Start'
-import Agencies from '@/components/Agencies'
-import AgencyLaunches from '@/components/AgencyLaunches'
-import LaunchesCharts from '@/components/LaunchesCharts'
+import HomePage from '@/pages/HomePage'
+import AgenciesPage from '@/pages/AgenciesPage'
+import AgencyLaunchesPage from '@/pages/AgencyLaunchesPage'
+import ChartsPage from '@/pages/ChartsPage'
 
 Vue.use(Router)
 
@@ -11,8 +11,8 @@ const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'Start',
-      component: Start,
+      name: 'Home',
+      component: HomePage,
       meta: {
         title: 'AstroX — be the launch',
         metaTags: [
@@ -26,63 +26,61 @@ const router = new Router({
           }
         ]
       },
-      children: [
-        {
-          path: '/agencies',
-          name: 'Agencies',
-          component: Agencies,
-          meta: {
-            title: 'All rocket launching agencies',
-            metaTags: [
-              {
-                name: 'description',
-                content: 'Full list of launch service providers, their launch history and ability to compare several ones.'
-              },
-              {
-                property: 'og:description',
-                content: 'Full list of launch service providers, their launch history and ability to compare several ones.'
-              }
-            ]
+    },
+    {
+      path: '/agencies',
+      name: 'Agencies',
+      component: AgenciesPage,
+      meta: {
+        title: 'All rocket launching agencies',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'Full list of launch service providers, their launch history and ability to compare several ones.'
+          },
+          {
+            property: 'og:description',
+            content: 'Full list of launch service providers, their launch history and ability to compare several ones.'
           }
-        },
-        {
-          path: '/agencies/:id',
-          name: 'AgencyLaunches',
-          component: AgencyLaunches,
-          props: true,
-          meta: {
-            title: 'Launch agency',
-            metaTags: [
-              {
-                name: 'description',
-                content: 'Launch statistics of chosen agency.'
-              },
-              {
-                property: 'og:description',
-                content: 'Launch statistics of chosen agency.'
-              }
-            ]
+        ]
+      }
+    },
+    {
+      path: '/agencies/:id',
+      name: 'AgencyLaunches',
+      component: AgencyLaunchesPage,
+      props: true,
+      meta: {
+        title: 'Launch agency',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'Launch statistics of chosen agency.'
+          },
+          {
+            property: 'og:description',
+            content: 'Launch statistics of chosen agency.'
           }
-        },
-        {
-          path: '/charts',
-          name: 'LaunchesCharts',
-          component: LaunchesCharts,
-          meta: {
-            title: 'Launch charts by years',
-            metaTags: [
-              {
-                name: 'description',
-                content: 'Check launches by countries, by companies, by months, by days, by day time and by continents.'
-              },
-              {
-                property: 'og:description',
-                content: 'Check launches by countries, by companies, by months, by days, by day time and by continents.'
-              }
-            ]
+        ]
+      }
+    },
+    {
+      path: '/charts',
+      name: 'Charts',
+      component: ChartsPage,
+      meta: {
+        title: 'Launch charts by years',
+        metaTags: [
+          {
+            name: 'description',
+            content: 'Check launches by countries, by companies, by months, by days, by day time and by continents.'
+          },
+          {
+            property: 'og:description',
+            content: 'Check launches by countries, by companies, by months, by days, by day time and by continents.'
           }
-        }
-      ]
+        ]
+      }
     }
   ]
 })

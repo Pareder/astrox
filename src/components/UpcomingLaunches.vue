@@ -8,7 +8,7 @@
       :agencyAbbrev="agencyAbbrev"
     />
     <LaunchModal
-      :closeDialog="closeDialog"
+      @closeDialog="closeDialog"
       :dialog="dialog"
       :launches="launchesByYearClicked"
       :year="year"

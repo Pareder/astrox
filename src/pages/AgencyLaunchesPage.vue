@@ -25,9 +25,9 @@
 <script>
 import { mapState } from 'vuex'
 import config from '../config'
-import SpaceXPast from './SpaceXPast'
-import PastLaunches from './PastLaunches'
-import UpcomingLaunches from './UpcomingLaunches'
+import SpaceXPast from '../components/SpaceXPast'
+import PastLaunches from '../components/PastLaunches'
+import UpcomingLaunches from '../components/UpcomingLaunches'
 
 export default {
   data () {

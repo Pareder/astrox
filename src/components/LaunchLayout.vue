@@ -107,7 +107,7 @@ export default {
 
   computed: {
     start () {
-      return this.$route.name === 'Start'
+      return this.$route.name === 'Home'
     }
   },
 

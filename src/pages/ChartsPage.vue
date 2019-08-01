@@ -68,10 +68,10 @@ import {
   getContrastColor,
   getAlphaColor
 } from '../utils'
-import HorizontalBarChart from './charts/HorizontalBarChart'
-import PieChart from './charts/PieChart'
-import LineChart from './charts/LineChart'
-import RadarChart from './charts/RadarChart'
+import HorizontalBarChart from '../components/charts/HorizontalBarChart'
+import PieChart from '../components/charts/PieChart'
+import LineChart from '../components/charts/LineChart'
+import RadarChart from '../components/charts/RadarChart'
 
 const MINIMUM_YEAR = 1980
 const MAXIMUM_YEAR = new Date().getFullYear() + 12

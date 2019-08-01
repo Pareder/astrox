@@ -180,7 +180,7 @@ class API {
   }
 
   async getMissionTypes () {
-    const response = this._http.get(`${config.apiServer}/missiontype`)
+    const response = await this._http.get(`${config.apiServer}/missiontype`)
 
     return response.body.types
   }

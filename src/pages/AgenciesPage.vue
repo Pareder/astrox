@@ -108,7 +108,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import ComparingModal from './modals/ComparingModal'
+import ComparingModal from '../components/modals/ComparingModal'
 
 export default {
   data() {

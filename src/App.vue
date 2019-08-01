@@ -1,13 +1,19 @@
 <template>
   <div id="app">
-    <router-view/>
+    <MainLayout />
     <vue-progress-bar></vue-progress-bar>
   </div>
 </template>
 
 <script>
+import MainLayout from './layouts/MainLayout'
+
 export default {
-  name: 'App'
+  name: 'App',
+
+  components: {
+    MainLayout
+  }
 }
 </script>
 

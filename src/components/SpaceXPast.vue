@@ -1,9 +1,22 @@
 <template>
   <div>
-    <Chart v-if="launchesByYears" style="min-height: 70vh" :openDialog="openDialog" :launches="launchesByYears" :agencyAbbrev="'SpX'" />
-    <LaunchModal :closeDialog="closeDialog" :dialog="dialog" :launches="launchesByYearClicked" :year="year" :isSpaceX="true" />
+    <Chart
+      v-if="launchesByYears"
+      class="chart"
+      :openDialog="openDialog"
+      :launches="launchesByYears"
+      agencyAbbrev="SpX"
+    />
+    <LaunchModal
+      @closeDialog="closeDialog"
+      :dialog="dialog"
+      :launches="launchesByYearClicked"
+      :year="year"
+      :isSpaceX="true"
+    />
   </div>
 </template>
+
 <script>
 import config from '../config'
 import Chart from './charts/Chart'
@@ -19,13 +32,16 @@ export default {
       launchesByYearClicked: null
     }
   },
+
   created () {
     this.getLaunchesByYears()
   },
+
   methods: {
     getLaunchesByYears () {
-      const getAgencyLaunches = new Promise((resolve, reject) => {
-        if (this.$store.state.agenciesLaunches[config.SPACEX_ID] && this.$store.state.agenciesLaunches[config.SPACEX_ID].official) {
+      const getAgencyLaunches = new Promise(resolve => {
+        if (this.$store.state.agenciesLaunches[config.SPACEX_ID] &&
+          this.$store.state.agenciesLaunches[config.SPACEX_ID].official) {
           this.launches = this.$store.state.agenciesLaunches[config.SPACEX_ID].official
           resolve()
         } else {
@@ -34,13 +50,12 @@ export default {
               this.launches = this.$store.state.agenciesLaunches[config.SPACEX_ID].official
               resolve()
             })
-            .catch(error => {
+            .catch(() => {
               resolve()
-              console.log(error)
             })
         }
       })
-      const getHistory = new Promise((resolve, reject) => {
+      const getHistory = new Promise(resolve => {
         if (this.$store.state.history) {
           resolve(this.$store.state.history)
         } else {
@@ -48,11 +63,10 @@ export default {
             .then(() => {
               resolve(this.$store.state.history)
             })
-            .catch(error => {
-              console.log(error.msg)
-            })
         }
       })
+
+      this.$Progress.start()
       Promise.all([getAgencyLaunches, getHistory])
         .then(values => {
           this.launchesByYears = {}
@@ -60,14 +74,17 @@ export default {
             const countByYears = this.calcCountByYear(item.year)
             this.launchesByYears[item.year] = { agency: countByYears, total: item.amount }
           })
+          this.$Progress.finish()
         })
-        .catch(error => {
-          console.log(error)
+        .catch(() => {
+          this.$Progress.fail()
         })
     },
+
     calcCountByYear (year) {
       return this.launches.filter(item => new Date(item.launch_date_utc).getFullYear() === year).length
     },
+
     openDialog (year) {
       this.launchesByYearClicked = this.launches.filter(item => {
         if (new Date(item.launch_date_utc).getFullYear() === year) {
@@ -77,6 +94,7 @@ export default {
       this.year = year
       this.dialog = true
     },
+
     closeDialog () {
       this.dialog = false
     }
@@ -87,3 +105,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  .chart {
+    min-height: 70vh;
+  }
+</style>

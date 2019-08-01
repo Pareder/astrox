@@ -28,7 +28,6 @@
       <v-btn class="colorChanger" v-else color="grey darken-4" small fab @click.stop="changeTheme('dark')"></v-btn>
     </v-toolbar>
     <v-content>
-      <Information v-if="$route.name === 'Start'" />
       <router-view></router-view>
     </v-content>
   </v-app>
@@ -37,7 +36,6 @@
 <script>
 import { mapState } from 'vuex'
 import config from '../config'
-import Information from './Information'
 
 const YELLOW_COLOR = '#D2D219'
 const BLUE_COLOR = '#1976D2'
@@ -86,10 +84,6 @@ export default {
     changeTheme (color) {
       this.$store.commit('SET_COLOR_THEME', color)
     }
-  },
-
-  components: {
-    Information
   }
 }
 </script>

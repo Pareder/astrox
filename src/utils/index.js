@@ -67,3 +67,13 @@ const contrast = (rgb1, rgb2) => {
 
   return luminanceSecond / luminanceFirst
 }
+
+export const getYouTubeLink = link => {
+  const path = /\?v=/.test(link) ? link.match(/\?v=(.*)/)[1] : link.match(/.be(.*)/)[1]
+
+  return `http://www.youtube.com/embed/${path}`
+}
+
+export const getVimeoLink = link => {
+  return `https://player.vimeo.com/video/${link.match(/vimeo.com\/(.*)/)[1]}`
+}

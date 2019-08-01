@@ -105,7 +105,7 @@
                           ></gmap-marker>
                         </gmap-map>
                       </v-tab-item>
-                      <v-tab-item>
+                      <v-tab-item v-if="dialog && activeLaunch === id">
                         <div class="video">
                           <iframe
                             v-if="launch.links.video_link"
@@ -118,8 +118,9 @@
                       </v-tab-item>
                     </v-tabs>
                   </v-flex>
-                  <v-flex xs12 v-if="launch.telemetry.flight_club">
+                  <v-flex xs12>
                     <iframe
+                      v-if="dialog && activeLaunch === id"
                       class="mt-3 px-2"
                       id="altitude1"
                       title="Inline Frame Example"
@@ -158,6 +159,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { getYouTubeLink } from '../../utils'
 import LaunchLayout from '../LaunchLayout'
 import RocketModal from './RocketModal'
 
@@ -203,7 +205,7 @@ export default {
   methods: {
     close () {
       this.activeLaunch = 0
-      this.closeDialog()
+      this.$emit('closeDialog')
     },
 
     getRocketDetails (id) {
@@ -231,9 +233,7 @@ export default {
     },
 
     getYouTubeLink (link) {
-      const path = /\?v=/.test(link) ? link.match(/\?v=(.*)/)[1] : link.match(/.be(.*)/)[1]
-
-      return `http://www.youtube.com/embed/${path}`
+      return getYouTubeLink(link)
     }
   },
 

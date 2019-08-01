@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="localDialog" max-width="500px">
     <v-card v-if="launch">
-      <v-btn absolute icon class="close-btn" @click.native="$emit('closeDialog')">
+      <v-btn absolute icon class="close-btn" @click.native="closeDialog">
         <v-icon color="grey">close</v-icon>
       </v-btn>
       <div class="headline px-5 pt-3">
@@ -39,32 +39,32 @@
           dark
           slider-color="lime"
         >
-          <v-tab>
+          <v-tab href="#tab-0">
             <v-icon>map</v-icon>
           </v-tab>
-          <v-tab v-for="video in launch.vidURLs" :key="video">
+          <v-tab v-for="(video, id) in launch.vidURLs" :key="video" :href="`#tab-${id + 1}`">
             <v-icon>videocam</v-icon>
           </v-tab>
-          <v-tab-item>
+          <v-tab-item value="tab-0">
             <gmap-map :center="location" :zoom="8" class="map">
               <gmap-marker :position="location" :title="launch.location.name"></gmap-marker>
             </gmap-map>
           </v-tab-item>
-          <v-tab-item v-for="(video, id) in launch.vidURLs" :key="id">
-            <div class="video">
+          <v-tab-item v-for="(video, id) in launch.vidURLs" :key="id" :value="`tab-${id + 1}`">
+            <div class="video" v-if="dialog">
               <iframe
                 v-if="video.includes('youtube')"
                 width="100%"
                 height="300"
                 frameborder="0"
-                :src="`http://www.youtube.com/embed/${video.split('v=')[1]}`"
+                :src="getYouTubeLink(video)"
               ></iframe>
               <iframe
                 v-else-if="video.includes('vimeo')"
                 width="100%"
                 height="300"
                 frameborder="0"
-                :src="`https://player.vimeo.com/video/${video.split('vimeo.com/')[1]}`"
+                :src="getVimeoLink(link)"
               ></iframe>
               <v-btn v-else flat color="primary" :href="video">{{ video }}</v-btn>
             </div>
@@ -73,14 +73,15 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="$emit('closeDialog')">Close</v-btn>
+        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="closeDialog">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
+import { getYouTubeLink, getVimeoLink } from '../../utils'
 
 export default {
   data () {
@@ -89,7 +90,7 @@ export default {
         lat: null,
         lng: null
       },
-      activeTab: 0,
+      activeTab: null,
       missionType: null
     }
   },
@@ -108,13 +109,16 @@ export default {
       'colorTheme'
     ]),
 
+    ...mapGetters([
+      'getMissionTypeName'
+    ]),
+
     localDialog: {
       get () {
         return this.dialog
       },
       set () {
-        this.activeTab = 0
-        this.$emit('closeDialog')
+        this.closeDialog()
       }
     },
 
@@ -132,12 +136,12 @@ export default {
 
       if (value.missions && value.missions.length > 0 && value.missions[0].type) {
         if (this.$store.state.missionTypes) {
-          this.missionType = this.$store.getters.missionType(value.missions[0].type)
+          this.missionType = this.getMissionTypeName(value.missions[0].type)
         } else {
           this.$Progress.start()
           this.$store.dispatch('getMissionTypes')
             .then(() => {
-              this.missionType = this.$store.getters.missionType(value.missions[0].type)
+              this.missionType = this.getMissionTypeName(value.missions[0].type)
               this.$Progress.finish()
             })
             .catch(() => {
@@ -145,6 +149,21 @@ export default {
             })
         }
       }
+    }
+  },
+
+  methods: {
+    closeDialog () {
+      this.activeTab = null
+      this.$emit('closeDialog')
+    },
+
+    getYouTubeLink (link) {
+      return getYouTubeLink(link)
+    },
+
+    getVimeoLink (link) {
+      return getVimeoLink(link)
     }
   }
 }
