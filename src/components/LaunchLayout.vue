@@ -1,7 +1,7 @@
 <template>
   <v-layout wrap align-center>
     <v-flex xs12 sm6 md4 class="pa-2" v-for="launch in visibleLaunches" :key="launch.id">
-      <v-card v-lazy>
+      <v-card>
         <v-card-title class="justify-center">
           <h3 class="headline">{{ launch.name }}</h3>
         </v-card-title>

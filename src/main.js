@@ -3,7 +3,6 @@ import VueResource from 'vue-resource'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
-import VueLazyload from 'vue-lazyload'
 import * as VueGoogleMaps from 'vue2-google-maps'
 import VueProgressBar from 'vue-progressbar'
 import config from './config'
@@ -19,9 +18,6 @@ Vue.use(VueGoogleMaps, {
     key: config.googleMapsKey,
     libraries: 'places'
   }
-})
-Vue.use(VueLazyload, {
-  lazyComponent: true
 })
 Vue.use(VueProgressBar, {
   color: 'rgb(143, 255, 199)',

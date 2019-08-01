@@ -51,7 +51,7 @@
             </gmap-map>
           </v-tab-item>
           <v-tab-item v-for="(video, id) in launch.vidURLs" :key="id">
-            <lazy-component tag="div" class="video">
+            <div class="video">
               <iframe
                 v-if="video.includes('youtube')"
                 width="100%"
@@ -67,7 +67,7 @@
                 :src="`https://player.vimeo.com/video/${video.split('vimeo.com/')[1]}`"
               ></iframe>
               <v-btn v-else flat color="primary" :href="video">{{ video }}</v-btn>
-            </lazy-component>
+            </div>
           </v-tab-item>
         </v-tabs>
       </v-card-text>

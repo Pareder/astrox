@@ -106,30 +106,28 @@
                         </gmap-map>
                       </v-tab-item>
                       <v-tab-item>
-                        <lazy-component tag="div" class="video">
+                        <div class="video">
                           <iframe
                             v-if="launch.links.video_link"
                             width="100%"
                             height="400"
                             frameborder="0"
-                            :src="`http://www.youtube.com/embed/${launch.links.video_link.split('v=')[1]}`"
+                            :src="getYouTubeLink(launch.links.video_link)"
                           ></iframe>
-                        </lazy-component>
+                        </div>
                       </v-tab-item>
                     </v-tabs>
                   </v-flex>
                   <v-flex xs12 v-if="launch.telemetry.flight_club">
-                    <lazy-component tag="div">
-                      <iframe
-                         class="mt-3 px-2"
-                         id="altitude1"
-                         title="Inline Frame Example"
-                         width="100%"
-                         height="600"
-                         frameborder="0"
-                         :src="launch.telemetry.flight_club"
-                      ></iframe>
-                    </lazy-component>
+                    <iframe
+                      class="mt-3 px-2"
+                      id="altitude1"
+                      title="Inline Frame Example"
+                      width="100%"
+                      height="600"
+                      frameborder="0"
+                      :src="launch.telemetry.flight_club"
+                    ></iframe>
                   </v-flex>
                 </v-layout>
               </v-container>
@@ -230,6 +228,12 @@ export default {
 
     closeRocketDialog () {
       this.rocketDialog = false
+    },
+
+    getYouTubeLink (link) {
+      const path = /\?v=/.test(link) ? link.match(/\?v=(.*)/)[1] : link.match(/.be(.*)/)[1]
+
+      return `http://www.youtube.com/embed/${path}`
     }
   },
 
@@ -243,7 +247,7 @@ export default {
 <style scoped>
   .list-with-bg {
     width: 100%;
-    heiight: 100%;
+    height: 100%;
   }
   .map {
     width: 100%;
