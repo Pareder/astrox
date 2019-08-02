@@ -6,13 +6,19 @@
     "start": "node server.js",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "test": "jest",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-transform-modules-commonjs": "^7.5.0",
+    "@babel/preset-env": "^7.5.5",
+    "babel-jest": "^24.8.0",
     "chart.js": "^2.8.0",
     "compression": "^1.7.4",
     "core-js": "^2.6.5",
     "express": "^4.17.1",
+    "jest": "^24.8.0",
     "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.6.10",
     "vue-chartjs": "^3.4.2",
@@ -35,7 +41,8 @@
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "jest": true
     },
     "extends": [
       "plugin:vue/essential",
@@ -54,5 +61,10 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "jest": {
+    "transformIgnorePatterns": [
+      "<rootDir>/(node_modules)/"
+    ]
+  }
 }

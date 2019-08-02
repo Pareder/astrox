@@ -4,17 +4,18 @@ import config from '../config'
 import {zeroTime} from '../utils'
 
 class API {
-  constructor (http) {
+  constructor (http, config) {
     this._http = http
+    this._config = config
   }
 
   static create () {
-    return new API(Vue.http)
+    return new API(Vue.http, config)
   }
 
-  async getLaunchesByDate ({startDate, endDate}) {
+  async getLaunchesByDate (startDate, endDate) {
     const response = await this._http.get(url.format({
-      pathname: `${config.apiServer}/launch/${startDate}/${endDate}`,
+      pathname: `${this._config.apiServer}/launch/${startDate}/${endDate}`,
       query: {
         limit: -1
       }
@@ -25,17 +26,18 @@ class API {
 
   async getHistory () {
     const promises = []
+    const currentYear = new Date().getFullYear()
 
-    for (let year = 2000; year <= new Date().getFullYear(); year++) {
+    for (let year = 2000; year <= currentYear; year++) {
       const promise = async () => {
         let finalYear = year + '-12-31'
 
-        if (year === new Date().getFullYear()) {
+        if (year === currentYear) {
           finalYear = `${year}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
         }
 
         const response = await this._http.get(url.format({
-          pathname: `${config.apiServer}/launch`,
+          pathname: `${this._config.apiServer}/launch`,
           query: {
             startdate: `${year}-01-01`,
             enddate: `${finalYear || (year + '-12-31')}`,
@@ -57,7 +59,7 @@ class API {
 
   async getHistoryLaunches (year) {
     const response = await this._http.get(url.format({
-      pathname: `${config.apiServer}/launch`,
+      pathname: `${this._config.apiServer}/launch`,
       query: {
         startdate: `${year}-01-01`,
         enddate: `${year + '-12-31'}`,
@@ -70,7 +72,7 @@ class API {
 
   async getAllUpcomingLaunches () {
     const lastLaunch = await this._http.get(url.format({
-      pathname: `${config.apiServer}/launch`,
+      pathname: `${this._config.apiServer}/launch`,
       query: {
         next: 1,
         sort: 'desc'
@@ -89,7 +91,7 @@ class API {
         }
 
         const response = await this._http.get(url.format({
-          pathname: `${config.apiServer}/launch`,
+          pathname: `${this._config.apiServer}/launch`,
           query: {
             startdate: `${presentYear || year + '-01-01'}`,
             enddate: `${year + '-12-31'}`,
@@ -112,13 +114,13 @@ class API {
 
   async getAgenciesInfo () {
     const getAgencyTypes = async () => {
-      const response = await this._http.get(`${config.apiServer}/agencytype/`)
+      const response = await this._http.get(`${this._config.apiServer}/agencytype/`)
 
       return response.body.types
     }
     const getAgencies = async () => {
       const response = await this._http.get(url.format({
-        pathname: `${config.apiServer}/lsp`,
+        pathname: `${this._config.apiServer}/lsp`,
         query: {
           limit: -1
         }
@@ -137,7 +139,7 @@ class API {
 
   async getAgencyAllLaunches (id) {
     const response = await this._http.get(url.format({
-      pathname: `${config.apiServer}/launch`,
+      pathname: `${this._config.apiServer}/launch`,
       query: {
         lsp: id,
         limit: -1
@@ -150,9 +152,9 @@ class API {
   async getSpaceXLaunches () {
     const getAllLaunches = async () => {
       const response = await this._http.get(url.format({
-        pathname: `${config.apiServer}/launch`,
+        pathname: `${this._config.apiServer}/launch`,
         query: {
-          lsp: config.SPACEX_ID,
+          lsp: this._config.SPACEX_ID,
           limit: -1
         }
       }))
@@ -160,12 +162,12 @@ class API {
       return response.body.launches
     }
     const getOfficialLaunches = async () => {
-      const response = await this._http.get(`${config.spaceXApi}/launches`)
+      const response = await this._http.get(`${this._config.spaceXApi}/launches`)
 
       return response.body
     }
     const getLocations = async () => {
-      const response = await this._http.get(`${config.spaceXApi}/launchpads`)
+      const response = await this._http.get(`${this._config.spaceXApi}/launchpads`)
 
       return response.body
     }
@@ -174,19 +176,19 @@ class API {
   }
 
   async getLaunchDetails (id) {
-    const response = await this._http.get(`${config.apiServer}/launch/${id}`)
+    const response = await this._http.get(`${this._config.apiServer}/launch/${id}`)
 
     return response.body.launches[0]
   }
 
   async getMissionTypes () {
-    const response = await this._http.get(`${config.apiServer}/missiontype`)
+    const response = await this._http.get(`${this._config.apiServer}/missiontype`)
 
     return response.body.types
   }
 
   async getRocket (name) {
-    const response = await this._http.get(`${config.spaceXApi}/rockets/${name}`)
+    const response = await this._http.get(`${this._config.spaceXApi}/rockets/${name}`)
 
     return response.body
   }
@@ -197,7 +199,7 @@ class API {
     const endDate = `${currentYear}-12-31`
 
     const response = await this._http.get(url.format({
-      pathname: `${config.apiServer}/launch/${startDate}/${endDate}`,
+      pathname: `${this._config.apiServer}/launch/${startDate}/${endDate}`,
       query: {
         limit: -1
       }

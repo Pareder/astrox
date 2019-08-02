@@ -13,7 +13,7 @@ const staticFileMiddleware = express.static(path.join(__dirname + '/dist'), {
   }
 })
 
-app = express()
+const app = express()
 app.use(compression())
 app.use(staticFileMiddleware)
 

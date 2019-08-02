@@ -3,7 +3,11 @@ const SUCCESS_STATUS = 3
 const FAILED_STATUS = 4
 
 export const zeroTime = val => {
-  return val > 9 ? val : '0' + val
+  if (Number.isInteger(val)) {
+    return val > 9 ? val.toString() : '0' + val
+  }
+
+  return '00'
 }
 
 export const getPendingLaunchesCount = launches => {
@@ -28,12 +32,11 @@ export const getContrastColors = (amount, bgColor) => {
   return colors
 }
 
-export const getContrastColor = bgColor => {
+export const getContrastColor = (bgColor = []) => {
   const randomColor = [
     Math.floor(Math.random() * 255),
     Math.floor(Math.random() * 255),
     Math.floor(Math.random() * 255)
-
   ]
 
   if (contrast(randomColor, bgColor) < 3) {
@@ -69,7 +72,7 @@ const contrast = (rgb1, rgb2) => {
 }
 
 export const getYouTubeLink = link => {
-  const path = /\?v=/.test(link) ? link.match(/\?v=(.*)/)[1] : link.match(/.be(.*)/)[1]
+  const path = /\?v=/.test(link) ? link.match(/\?v=(.*)/)[1] : link.match(/.be\/(.*)/)[1]
 
   return `http://www.youtube.com/embed/${path}`
 }

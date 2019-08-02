@@ -112,7 +112,7 @@ export default {
       }
 
       this.$Progress.start()
-      this._api.getLaunchesByDate({ startDate, endDate })
+      this._api.getLaunchesByDate(startDate, endDate)
         .then(launches => {
           this.launches = launches
           this.$Progress.finish()
