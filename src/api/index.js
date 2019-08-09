@@ -62,7 +62,7 @@ class API {
       pathname: `${this._config.apiServer}/launch`,
       query: {
         startdate: `${year}-01-01`,
-        enddate: `${year + '-12-31'}`,
+        enddate: `${year}-12-31`,
         limit: -1
       }
     }))
@@ -71,22 +71,16 @@ class API {
   }
 
   async getAllUpcomingLaunches () {
-    const lastLaunch = await this._http.get(url.format({
-      pathname: `${this._config.apiServer}/launch`,
-      query: {
-        next: 1,
-        sort: 'desc'
-      }
-    }))
-    const lastLaunchYear = new Date(lastLaunch.body.launches[0].net).getFullYear()
+    const lastLaunchYear = await this._getLastLaunch()
+    const currentYear = new Date().getFullYear()
 
     const promises = []
 
-    for (let year = new Date().getFullYear(); year <= lastLaunchYear; year++) {
+    for (let year = currentYear; year <= lastLaunchYear; year++) {
       const promise = async () => {
         let presentYear = null
 
-        if (year === new Date().getFullYear()) {
+        if (year === currentYear) {
           presentYear = `${year}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
         }
 
@@ -113,11 +107,6 @@ class API {
   }
 
   async getAgenciesInfo () {
-    const getAgencyTypes = async () => {
-      const response = await this._http.get(`${this._config.apiServer}/agencytype/`)
-
-      return response.body.types
-    }
     const getAgencies = async () => {
       const response = await this._http.get(url.format({
         pathname: `${this._config.apiServer}/lsp`,
@@ -127,6 +116,11 @@ class API {
       }))
 
       return response.body.agencies
+    }
+    const getAgencyTypes = async () => {
+      const response = await this._http.get(`${this._config.apiServer}/agencytype`)
+
+      return response.body.types
     }
     const getContinents = async () => {
       const response = await this._http.get('/countries.json')
@@ -206,6 +200,18 @@ class API {
     }))
 
     return response.body.launches
+  }
+
+  async _getLastLaunch () {
+    const lastLaunch = await this._http.get(url.format({
+      pathname: `${this._config.apiServer}/launch`,
+      query: {
+        next: 1,
+        sort: 'desc'
+      }
+    }))
+
+   return new Date(lastLaunch.body.launches[0].net).getFullYear()
   }
 }
 

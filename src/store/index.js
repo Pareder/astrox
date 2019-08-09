@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import mutations from './mutations'
-import actions from './actions'
+import getMutations from './getMutations'
+import getActions from './getActions'
 import getters from './getters'
 
 Vue.use(Vuex)
@@ -20,8 +20,8 @@ const store = new Vuex.Store({
     colorTheme: localStorage.getItem('colorTheme') ? localStorage.getItem('colorTheme') : 'light'
   },
 
-  mutations,
-  actions,
+  mutations: getMutations(),
+  actions: getActions(),
   getters
 })
 
