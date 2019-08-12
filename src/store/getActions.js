@@ -3,6 +3,7 @@ import * as types from './types'
 import config from '../config'
 
 const NUMBER_OF_DAYS_BEFORE = 3
+const NUMBER_OF_DAYS_WEEK = 7
 
 const getActions = (api = Vue.API, localStorage = window.localStorage) => {
   return {
@@ -19,9 +20,7 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
         }
 
         if (isReturn) {
-          commit(types.SET_HISTORY, JSON.parse(localStorage.getItem('launchHistory')))
-
-          return
+          return commit(types.SET_HISTORY, JSON.parse(localStorage.getItem('launchHistory')))
         }
       }
 
@@ -37,9 +36,7 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
           new Date(yearLaunches.changed) <= new Date().setDate(new Date().getDate() - NUMBER_OF_DAYS_BEFORE)
 
         if (!needUpdate) {
-          commit(types.SET_HISTORY_LAUNCHES, { data: yearLaunches.launches, year: year })
-
-          return
+          return commit(types.SET_HISTORY_LAUNCHES, { data: yearLaunches.launches, year: year })
         }
       }
 
@@ -52,9 +49,9 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
         const nextLaunch = JSON.parse(localStorage.getItem('upcomingLaunches'))[0].nextLaunch
 
         if (new Date(nextLaunch) > Date.now()) {
-          commit(types.SET_ALL_UPCOMING_LAUNCHES, { data: JSON.parse(localStorage.getItem('upcomingLaunches')) })
-
-          return
+          return commit(types.SET_ALL_UPCOMING_LAUNCHES, {
+            data: JSON.parse(localStorage.getItem('upcomingLaunches'))
+          })
         }
       }
 
@@ -64,9 +61,7 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
 
     async getAgenciesInfo ({ commit }) {
       if (localStorage.getItem('launchAgencies')) {
-        commit('SET_AGENCIES', JSON.parse(localStorage.getItem('launchAgencies')))
-
-        return
+        return commit('SET_AGENCIES', JSON.parse(localStorage.getItem('launchAgencies')))
       }
 
       const [agencies, agencyTypes, agencyContinents] = await api.getAgenciesInfo()
@@ -79,10 +74,10 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
       const launches = JSON.parse(localStorage.getItem('agenciesLaunches'))
 
       if (launches && launches[id]) {
-        if (new Date(launches[id].changed) < new Date().setDate(new Date().getDate() - 7)) {
-          commit(types.SET_AGENCY_LAUNCHES, { id: id, data: launches[id].launches })
+        const weekLaterDate = new Date().setDate(new Date().getDate() - NUMBER_OF_DAYS_WEEK)
 
-          return
+        if (new Date(launches[id].changed) > weekLaterDate) {
+          return commit(types.SET_AGENCY_LAUNCHES, { id, data: launches[id].launches })
         }
       }
 
@@ -94,14 +89,14 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
       const agenciesLaunches = JSON.parse(localStorage.getItem('agenciesLaunches'))
 
       if (agenciesLaunches && agenciesLaunches[config.SPACEX_ID] && agenciesLaunches[config.SPACEX_ID].official) {
-        if (new Date(agenciesLaunches[config.SPACEX_ID].changed) > new Date().setDate(new Date().getDate() - 7)) {
-          commit(types.SET_AGENCY_LAUNCHES, {
+        const weekLaterDate = new Date().setDate(new Date().getDate() - NUMBER_OF_DAYS_WEEK)
+
+        if (new Date(agenciesLaunches[config.SPACEX_ID].changed) > weekLaterDate) {
+          return commit(types.SET_AGENCY_LAUNCHES, {
             id: config.SPACEX_ID,
             data: agenciesLaunches[config.SPACEX_ID].launches,
             official: agenciesLaunches[config.SPACEX_ID].official
           })
-
-          return
         }
       }
 
@@ -122,9 +117,7 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
 
     async getMissionTypes ({ commit }) {
       if (localStorage.getItem('missionTypes')) {
-        commit(types.SET_MISSION_TYPES, JSON.parse(localStorage.getItem('missionTypes')))
-
-        return
+        return commit(types.SET_MISSION_TYPES, JSON.parse(localStorage.getItem('missionTypes')))
       }
 
       const missionTypes = await api.getMissionTypes()
@@ -135,9 +128,7 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
       const rockets = JSON.parse(localStorage.getItem('rockets'))
 
       if (rockets && rockets[name]) {
-        commit(types.SET_ROCKET, { name: name, data: rockets[name] })
-
-        return
+        return commit(types.SET_ROCKET, { name: name, data: rockets[name] })
       }
 
       const rocket = await api.getRocket(name)
@@ -148,9 +139,7 @@ const getActions = (api = Vue.API, localStorage = window.localStorage) => {
       const launches = JSON.parse(localStorage.getItem('presentYearLaunches'))
 
       if (launches && new Date(launches[0].net) > Date.now()) {
-        commit(types.SET_PRESENT_YEAR_LAUNCHES, { data: launches })
-
-        return
+        return commit(types.SET_PRESENT_YEAR_LAUNCHES, { data: launches })
       }
 
       const presentYearLaunches = await api.getPresentYearLaunches()
