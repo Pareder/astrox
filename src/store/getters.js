@@ -19,7 +19,11 @@ const getters = {
       : []
   },
 
-  getMissionTypeName: state => id => state.missionTypes.find(item => item.id === id).name,
+  getMissionTypeName: state => id => {
+    const missionType = state.missionTypes.find(item => item.id === id)
+
+    return missionType ? missionType.name : 'Unknown'
+  },
 
   agencyTypeNames: state => ['All', ...new Set(state.agencies.map(item => item.type))],
 
