@@ -1,4 +1,4 @@
-import getters from './getters'
+import getters from '../getters'
 
 describe('getters', () => {
   describe('agencyInfo method', () => {

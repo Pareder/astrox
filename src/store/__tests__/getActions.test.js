@@ -1,4 +1,4 @@
-import getActions from './getActions'
+import getActions from '../getActions'
 
 const localStorageMock = getLocalStorage()
 const commitMock = jest.fn((type, payload) => ({ type, payload }))

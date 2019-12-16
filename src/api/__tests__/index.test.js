@@ -1,4 +1,4 @@
-import API from '../api'
+import API from '../index'
 
 const httpMock = {
   get: jest.fn(async () => ({ body: {} }))

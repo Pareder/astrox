@@ -1,4 +1,4 @@
-import getMutations from './getMutations'
+import getMutations from '../getMutations'
 
 function getLocalStorage (data = false) {
   return {

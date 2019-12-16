@@ -8,7 +8,7 @@ import {
   getAlphaColor,
   getYouTubeLink,
   getVimeoLink
-} from '../utils'
+} from '../index'
 
 const launches = [
   { status: 1 },
