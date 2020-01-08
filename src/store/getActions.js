@@ -1,11 +1,10 @@
-import Vue from 'vue'
 import * as types from './types'
 import config from '../config'
 
 const NUMBER_OF_DAYS_BEFORE = 3
 const NUMBER_OF_DAYS_WEEK = 7
 
-const getActions = (api = Vue.API, localStorage = window.localStorage) => {
+const getActions = (api, localStorage = window.localStorage) => {
   return {
     async getHistory ({ commit }) {
       if (localStorage.getItem('launchHistory')) {

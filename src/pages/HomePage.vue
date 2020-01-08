@@ -50,7 +50,6 @@
 </template>
 
 <script>
-import API from '../api'
 import { zeroTime, getPendingLaunchesCount, getSuccessfulLaunchesCount, getFailedLaunchesCount } from '../utils'
 import LaunchLayout from '../components/LaunchLayout'
 
@@ -80,7 +79,6 @@ export default {
   },
 
   created () {
-    this._api = API.create()
     this.launches = this.$store.state.presentYearLaunches
 
     if (!this.launches) {
@@ -112,7 +110,7 @@ export default {
       }
 
       this.$Progress.start()
-      this._api.getLaunchesByDate(startDate, endDate)
+      this.API.getLaunchesByDate(startDate, endDate)
         .then(launches => {
           this.launches = launches
           this.$Progress.finish()

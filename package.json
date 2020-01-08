@@ -1,7 +1,9 @@
 {
   "name": "astrox",
   "version": "1.0.0",
-  "private": true,
+  "engines": {
+    "node": "9.11.2"
+  },
   "scripts": {
     "start": "node server.js",
     "serve": "vue-cli-service serve",

@@ -6,10 +6,10 @@ import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import * as VueGoogleMaps from 'vue2-google-maps'
 import VueProgressBar from 'vue-progressbar'
 import config from './config'
-import store from './store'
 import App from './App'
-import router from './router'
 import plugins from './plugins'
+import router from './router'
+import getStore from './store/getStore'
 
 Vue.use(VueResource)
 Vue.use(Vuetify)
@@ -32,7 +32,7 @@ Vue.config.productionTip = false
 new Vue({
   el: '#app',
   router,
-  store,
+  store: getStore(Vue),
   components: { App },
   template: '<App/>'
 })
