@@ -11,6 +11,9 @@
     "test": "jest",
     "lint": "vue-cli-service lint"
   },
+  "pre-commit": [
+    "test"
+  ],
   "dependencies": {
     "@babel/core": "^7.7.5",
     "@babel/plugin-transform-modules-commonjs": "^7.7.5",
@@ -38,6 +41,7 @@
     "babel-eslint": "^10.0.3",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "pre-commit": "^1.2.2",
     "vue-template-compiler": "^2.6.10"
   },
   "eslintConfig": {
