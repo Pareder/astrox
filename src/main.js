@@ -5,7 +5,6 @@ import 'vuetify/dist/vuetify.min.css'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 import * as VueGoogleMaps from 'vue2-google-maps'
 import VueProgressBar from 'vue-progressbar'
-import config from './config'
 import App from './App'
 import plugins from './plugins'
 import router from './router'
@@ -15,7 +14,7 @@ Vue.use(VueResource)
 Vue.use(Vuetify)
 Vue.use(VueGoogleMaps, {
   load: {
-    key: config.googleMapsKey,
+    key: process.env.VUE_APP_GOOGLE_MAPS_KEY,
     libraries: 'places'
   }
 })

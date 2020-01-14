@@ -26,7 +26,6 @@ export default {
       icon: 'pie_chart'
     }
   ],
-  googleMapsKey: 'AIzaSyC9H_ZF0P-ghuts2MmTKxJDOaw7KTSM0AI',
   months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
     'November', 'December'],
   days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],

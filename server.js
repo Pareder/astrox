@@ -4,7 +4,7 @@ const compression = require('compression')
 
 const staticFileMiddleware = express.static(path.join(__dirname + '/dist'), {
   maxAge: 604800000,
-  setHeaders: function (res, path) {
+  setHeaders: function (res) {
     res.setHeader('X-FRAME-OPTIONS', 'DENY')
     res.setHeader('X-XSS-Protection', '1; mode=block')
     res.setHeader('X-Content-Type-Options', 'nosniff')
@@ -16,7 +16,6 @@ const staticFileMiddleware = express.static(path.join(__dirname + '/dist'), {
 const app = express()
 app.use(compression())
 app.use(staticFileMiddleware)
-
 
 const port = process.env.PORT || 5000
 
