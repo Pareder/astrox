@@ -10,7 +10,7 @@
       <v-card-text>
         <v-list two-line>
           <v-list-tile avatar>
-            <v-list-tile-avatar>
+            <v-list-tile-avatar v-if="imageURL">
               <img :src="imageURL" class="rocket_img" height="100%">
             </v-list-tile-avatar>
             <v-list-tile-content>
@@ -125,7 +125,7 @@ export default {
     imageURL () {
       const imageArray = this.launch.rocket.imageURL.split('_')
 
-      return `${imageArray[0]}_320.${imageArray[1].split('.')[1]}`
+      return imageArray[1] && `${imageArray[0]}_320.${imageArray[1].split('.')[1]}`
     }
   },
 
