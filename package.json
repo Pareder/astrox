@@ -2,7 +2,7 @@
   "name": "astrox",
   "version": "1.0.0",
   "engines": {
-    "node": "9.11.2"
+    "node": "10.17.0"
   },
   "scripts": {
     "start": "node server.js",
@@ -18,12 +18,12 @@
     "@babel/core": "^7.7.5",
     "@babel/plugin-transform-modules-commonjs": "^7.7.5",
     "@babel/preset-env": "^7.7.6",
-    "babel-jest": "^24.9.0",
+    "babel-jest": "^26.0.1",
     "chart.js": "^2.9.3",
     "compression": "^1.7.4",
     "core-js": "^2.6.11",
     "express": "^4.17.1",
-    "jest": "^24.9.0",
+    "jest": "^26.0.1",
     "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.6.10",
     "vue-chartjs": "^3.5.0",
@@ -36,8 +36,8 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.12.1",
-    "@vue/cli-plugin-eslint": "^3.12.1",
-    "@vue/cli-service": "^3.12.1",
+    "@vue/cli-plugin-eslint": "^4.4.1",
+    "@vue/cli-service": "^4.4.1",
     "babel-eslint": "^10.0.3",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
