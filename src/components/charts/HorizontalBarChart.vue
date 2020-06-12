@@ -17,7 +17,7 @@ export default {
         legend: { display: false },
         title: {
           display: true,
-          text: 'Launches by countries',
+          text: this.title,
           fontSize: 16
         },
         tooltips: {
@@ -58,6 +58,9 @@ export default {
   props: {
     chartData: {
       type: Object
+    },
+    title: {
+      type: String
     }
   },
 

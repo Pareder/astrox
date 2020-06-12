@@ -26,7 +26,7 @@ export default {
         },
         title: {
           display: true,
-          text: 'Launches by continents',
+          text: this.title,
           fontSize: 16
         },
         scale: {
@@ -54,6 +54,9 @@ export default {
   props: {
     chartData: {
       type: Object
+    },
+    title: {
+      type: String
     }
   },
 

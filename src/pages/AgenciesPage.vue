@@ -66,14 +66,7 @@
           </v-card>
         </v-flex>
       </transition-group>
-      <v-flex xs12 class="title" v-if="sortedAgencies && sortedAgencies.length === 0">
-        <v-chip>
-          <v-avatar class="red">
-            <v-icon>close</v-icon>
-          </v-avatar>
-          No items found
-        </v-chip>
-      </v-flex>
+      <Chip v-if="sortedAgencies && sortedAgencies.length === 0" className="red" icon="close" text="No items found" />
     </v-layout>
     <ComparingModal
       :dialog="dialog"
@@ -109,6 +102,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import ComparingModal from '../components/modals/ComparingModal'
+import Chip from '../components/Chip'
 
 export default {
   data() {
@@ -248,7 +242,8 @@ export default {
   },
 
   components: {
-    ComparingModal
+    ComparingModal,
+    Chip
   }
 }
 </script>

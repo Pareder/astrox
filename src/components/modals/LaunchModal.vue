@@ -8,12 +8,7 @@
         <v-toolbar-title>{{ agencyName ? `${agencyName} ` : '' }}Launches in {{ year }}</v-toolbar-title>
       </v-toolbar>
       <v-card-text v-if="isSpaceX">
-        <v-chip v-if="!launches || launches.length === 0">
-          <v-avatar class="red">
-            <v-icon>close</v-icon>
-          </v-avatar>
-          No launches in this year
-        </v-chip>
+        <Chip v-if="!launches || !launches.length" className="red" icon="close" text="No launches in this year" />
         <v-tabs
           v-else
           v-model="activeLaunch"
@@ -137,14 +132,9 @@
         </v-tabs>
       </v-card-text>
       <v-card-text v-else>
-        <h3 v-if="!launches || launches.length === 0">
-          <v-chip>
-            <v-avatar class="red">
-              <v-icon>close</v-icon>
-            </v-avatar>
-             No launches in selected period
-          </v-chip>
-        </h3>
+        <Chip v-if="!launches || !launches.length" className="red" icon="close">
+          <b>No launches in selected period</b>
+        </Chip>
         <LaunchLayout :launches="launches" :past="past" />
       </v-card-text>
       <div style="flex: 1 1 auto;"></div>
@@ -162,6 +152,7 @@ import { mapState } from 'vuex'
 import { getYouTubeLink } from '../../utils'
 import LaunchLayout from '../LaunchLayout'
 import RocketModal from './RocketModal'
+import Chip from '../Chip'
 
 export default {
   data () {
@@ -239,7 +230,8 @@ export default {
 
   components: {
     LaunchLayout,
-    RocketModal
+    RocketModal,
+    Chip
   }
 }
 </script>

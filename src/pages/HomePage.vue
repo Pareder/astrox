@@ -16,42 +16,22 @@
       </v-dialog>
     </v-flex>
     <div v-if="launches">
-      <div v-if="datepicker && new Date(datepicker) < new Date()">
-        <v-chip>
-          <v-avatar class="red lighten-1">
-            <v-icon>close</v-icon>
-          </v-avatar>
-          <strong>{{ failedLaunches }}</strong> &nbsp;failed {{ failedLaunches === 1 ? 'launch' : 'launches' }}
-        </v-chip>
-        <v-chip>
-          <v-avatar class="light-green accent-4">
-            <v-icon>done</v-icon>
-          </v-avatar>
-          <strong>{{ successfulLaunches }}</strong> &nbsp;successful {{ successfulLaunches === 1 ? 'launch' : 'launches' }}
-        </v-chip>
-      </div>
-      <v-chip v-if="!datepicker || new Date(datepicker) > new Date()">
-        <v-avatar class="yellow">
-          <v-icon>timeline</v-icon>
-        </v-avatar>
-        <strong>{{ pendingLaunches }}</strong> &nbsp;pending {{ pendingLaunches === 1 ? 'launch' : 'launches' }}
-      </v-chip>
+      <LaunchChip v-if="failedLaunches" :count="failedLaunches" status="fail"/>
+      <LaunchChip v-if="successfulLaunches" :count="successfulLaunches" status="success"/>
+      <LaunchChip v-if="pendingLaunches" :count="pendingLaunches" status="pending"/>
       <LaunchLayout :launches="launches" :past="past" />
     </div>
-    <h3 v-if="error">
-      <v-chip>
-        <v-avatar class="red">
-          <v-icon>close</v-icon>
-        </v-avatar>
-        No launches in selected period
-      </v-chip>
-    </h3>
+    <Chip v-if="error" className="red" icon="close">
+      <b>No launches in selected period</b>
+    </Chip>
   </div>
 </template>
 
 <script>
 import { zeroTime, getPendingLaunchesCount, getSuccessfulLaunchesCount, getFailedLaunchesCount } from '../utils'
 import LaunchLayout from '../components/LaunchLayout'
+import LaunchChip from '../components/LaunchChip'
+import Chip from '../components/Chip'
 
 export default {
   data () {
@@ -103,11 +83,7 @@ export default {
       const startDate = `${date.getFullYear()}-${zeroTime(date.getMonth() + 1)}-${zeroTime(date.getDate())}`
       const endDate = `${new Date().getFullYear()}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
 
-      if (startDate < endDate) {
-        this.past = true
-      } else {
-        this.past = false
-      }
+      this.past = startDate < endDate;
 
       this.$Progress.start()
       this.API.getLaunchesByDate(startDate, endDate)
@@ -124,7 +100,9 @@ export default {
   },
 
   components: {
-    LaunchLayout
+    LaunchLayout,
+    LaunchChip,
+    Chip
   }
 }
 </script>

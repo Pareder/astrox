@@ -5,55 +5,35 @@
         outline
         menu-props="auto"
         :loading="loading"
-        :items="getYears"
+        :items="years"
         label="Select a year to see companies' launches"
         v-model="chosenYear"
         @input="makeCharts"
       />
     </v-flex>
+    <Chip v-if="error" className="red" icon="close">
+      <b>No information about launches in {{ chosenYear }}</b>
+    </Chip>
     <div v-if="launches">
       <p class="text-xs-left headline">Total Launches: {{ totalLaunches }}</p>
-      <v-chip>
-        <v-avatar class="red">
-          <v-icon>close</v-icon>
-        </v-avatar>
-        <strong>{{ failedLaunches }}</strong> &nbsp;failed {{ failedLaunches === 1 ? 'launch' : 'launches' }}
-      </v-chip>
-      <v-chip>
-        <v-avatar class="light-green">
-          <v-icon>done</v-icon>
-        </v-avatar>
-        <strong>{{ successfulLaunches }}</strong> &nbsp;successful {{ successfulLaunches === 1 ? 'launch' : 'launches' }}
-      </v-chip>
-      <v-chip v-if="chosenYear >= new Date().getFullYear()">
-        <v-avatar class="yellow">
-          <v-icon>timeline</v-icon>
-        </v-avatar>
-        <strong>{{ pendingLaunches }}</strong> &nbsp;pending {{ pendingLaunches === 1 ? 'launch' : 'launches' }}
-      </v-chip>
+      <LaunchChip v-if="failedLaunches" :count="failedLaunches" status="fail"/>
+      <LaunchChip v-if="successfulLaunches" :count="successfulLaunches" status="success"/>
+      <LaunchChip v-if="pendingLaunches" :count="pendingLaunches" status="pending"/>
     </div>
     <div v-if="agenciesReady && !error">
-      <v-chip v-for="(item, id) in getLaunchesByAgencyType" :key="id">
-        <v-avatar class="cyan">
-          <v-icon>business</v-icon>
-        </v-avatar>
-        <strong>{{ item }}</strong> &nbsp;{{ id }}
-      </v-chip>
-      <HorizontalBarChart :chartData="getHorizontalBarChartData" />
-      <PieChart :chartData="getPieChartData" />
-      <LineChart :chartData="getLineChartData" title="Launches by months" />
-      <LineChart :chartData="getDaysChartData" title="Launches by days" />
-      <PieChart :chartData="getTimeChartData" title="Launches by day time" position="top" />
-      <RadarChart :chartData="getRadarChartData" />
+      <LaunchChip
+        v-for="(val, id) in launchesByAgencyType"
+        :key="id"
+        :count="val"
+        :status="id.toLowerCase()"
+      />
+      <HorizontalBarChart :chartData="countriesChartData" title="Launches by countries"/>
+      <PieChart :chartData="companiesChartData" title="Launches by companies" />
+      <LineChart :chartData="monthsChartData" title="Launches by months" />
+      <LineChart :chartData="daysChartData" title="Launches by days" />
+      <PieChart :chartData="timeChartData" title="Launches by day time" position="top" />
+      <RadarChart :chartData="continentsChartData" title="Launches by continents" />
     </div>
-    <h3 v-if="error">
-      <v-chip>
-        <v-avatar class="red">
-          <v-icon>close</v-icon>
-        </v-avatar>
-        No information about launches in {{ chosenYear }}
-      </v-chip>
-    </h3>
   </v-container>
 </template>
 
@@ -72,6 +52,8 @@ import HorizontalBarChart from '../components/charts/HorizontalBarChart'
 import PieChart from '../components/charts/PieChart'
 import LineChart from '../components/charts/LineChart'
 import RadarChart from '../components/charts/RadarChart'
+import LaunchChip from '../components/LaunchChip'
+import Chip from '../components/Chip'
 
 const MINIMUM_YEAR = 1980
 const MAXIMUM_YEAR = new Date().getFullYear() + 12
@@ -109,25 +91,21 @@ export default {
       return getPendingLaunchesCount(this.launches)
     },
 
-    getLaunchesByAgencyType () {
+    launchesByAgencyType () {
       const launchesByAgencyType = {}
 
       for (const launch of this.launches) {
         if (this.agencies[launch.lsp] && this.agencies[launch.lsp].type) {
-          if (!launchesByAgencyType[this.agencies[launch.lsp].type]) {
-            launchesByAgencyType[this.agencies[launch.lsp].type] = 0
-          }
-
-          ++launchesByAgencyType[this.agencies[launch.lsp].type]
+          launchesByAgencyType[this.agencies[launch.lsp].type] =
+            (launchesByAgencyType[this.agencies[launch.lsp].type] || 0) + 1
         }
       }
 
       return launchesByAgencyType
     },
 
-    getYears () {
+    years () {
       const years = []
-
       for (let i = MINIMUM_YEAR; i < MAXIMUM_YEAR; i++) {
         years.push(i)
       }
@@ -139,7 +117,7 @@ export default {
       return this.launches ? this.launches.length : 0
     },
 
-    getPieChartData () {
+    companiesChartData () {
       const launchesCount = this.getLaunchesCountBy('name')
 
       return {
@@ -154,7 +132,7 @@ export default {
       }
     },
 
-    getLineChartData () {
+    monthsChartData () {
       const color = getContrastColor(this.bgColor)
 
       return {
@@ -162,7 +140,7 @@ export default {
         datasets: [
           {
             label: 'Launches',
-            data: this.createLineData,
+            data: config.months.map(month => this.launches.filter(item => item.net.includes(month)).length),
             borderColor: color,
             fill: true,
             fillOpacity: 0.5,
@@ -173,7 +151,7 @@ export default {
       }
     },
 
-    getRadarChartData () {
+    continentsChartData () {
       const color = getContrastColor(this.bgColor)
 
       return {
@@ -184,7 +162,11 @@ export default {
             fill: true,
             backgroundColor: getAlphaColor(color),
             borderColor: color,
-            data: this.createRadarData,
+            data: config.continents.map(continent => {
+              return this.launches.filter(item => {
+                return this.agencies[item.lsp] && this.agencies[item.lsp].continent === continent
+              }).length
+            }),
             pointRadius: 5,
             pointBackgroundColor: color
           }
@@ -192,7 +174,7 @@ export default {
       }
     },
 
-    getHorizontalBarChartData () {
+    countriesChartData () {
       const launchesCount = this.getLaunchesCountBy('countryName')
 
       return {
@@ -207,21 +189,7 @@ export default {
       }
     },
 
-    createLineData () {
-      return config.months.map(month => {
-        return this.launches.filter(item => item.net.includes(month)).length
-      })
-    },
-
-    createRadarData () {
-      return config.continents.map(continent => {
-        return this.launches.filter(item => {
-          return this.agencies[item.lsp] && this.agencies[item.lsp].continent === continent
-        }).length
-      })
-    },
-
-    getDaysChartData () {
+    daysChartData () {
       const daysData = {}
       const color = getContrastColor(this.bgColor)
 
@@ -251,7 +219,7 @@ export default {
       }
     },
 
-    getTimeChartData () {
+    timeChartData () {
       const timeData = {}
 
       for (const launch of this.launches) {
@@ -367,7 +335,9 @@ export default {
     HorizontalBarChart,
     PieChart,
     LineChart,
-    RadarChart
+    RadarChart,
+    LaunchChip,
+    Chip
   }
 }
 </script>

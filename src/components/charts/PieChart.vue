@@ -16,7 +16,7 @@ export default {
         maintainAspectRatio: false,
         title: {
           display: true,
-          text: this.title || 'Launches by companies',
+          text: this.title,
           fontSize: 16
         },
         legend: {
