@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import url from 'url'
 import config from '../config'
-import {zeroTime} from '../utils'
+import { zeroTime } from '../utils'
 
 class API {
   constructor (http, config) {
@@ -96,7 +96,7 @@ class API {
         return {
           year,
           amount: response.body.total,
-          ...(presentYear ? {nextLaunch: response.body.launches[0].net} : {})
+          ...(presentYear ? { nextLaunch: response.body.launches[0].net } : {})
         }
       }
 

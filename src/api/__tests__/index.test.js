@@ -10,7 +10,7 @@ const configMock = {
 }
 
 function getAPI (http = httpMock, config = configMock) {
-  return new API(http, config);
+  return new API(http, config)
 }
 
 function getHttpMock (result) {
@@ -175,7 +175,7 @@ describe('API class', () => {
         expectedResult.push({
           year,
           amount: 1,
-          ...(year == currentYear ? {nextLaunch: launchNet} : {})
+          ...(year == currentYear ? { nextLaunch: launchNet } : {})
         })
 
       }

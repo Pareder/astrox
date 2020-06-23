@@ -83,7 +83,7 @@ export default {
       const startDate = `${date.getFullYear()}-${zeroTime(date.getMonth() + 1)}-${zeroTime(date.getDate())}`
       const endDate = `${new Date().getFullYear()}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
 
-      this.past = startDate < endDate;
+      this.past = startDate < endDate
 
       this.$Progress.start()
       this.API.getLaunchesByDate(startDate, endDate)

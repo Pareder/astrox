@@ -96,7 +96,7 @@ describe('vuex actions', () => {
 
     it('Should call commit with localStorage data', async () => {
       const data = [
-        { nextLaunch: new Date().setDate(new Date().getDate() + 1)},
+        { nextLaunch: new Date().setDate(new Date().getDate() + 1) },
         1,
         2
       ]
@@ -130,7 +130,7 @@ describe('vuex actions', () => {
     it('Should call commit with localStorage data', async () => {
       const data = [1, 2, 3]
       const localStorage = getLocalStorage(data)
-      const fn = getMethod({ method, localStorage})
+      const fn = getMethod({ method, localStorage })
       await fn()
 
       expect(commitMock).toBeCalledWith('SET_AGENCIES', data)
