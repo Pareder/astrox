@@ -6,7 +6,7 @@ export const LIGHT_BACKDROP_COLOR = '#FAFAFA'
 export const DARK_BACKDROP_COLOR = '#303030'
 
 export default {
-  apiServer: 'https://launchlibrary.net/1.4',
+  apiServer: 'https://lldev.thespacedevs.com/2.2.0',
   spaceXApi: 'https://api.spacexdata.com/v2',
   SPACEX_ID: 121,
   menuItems: [

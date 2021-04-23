@@ -115,7 +115,7 @@
                   </v-flex>
                   <v-flex xs12>
                     <iframe
-                      v-if="dialog && activeLaunch === id"
+                      v-if="dialog && activeLaunch === id && launch.telemetry.flight_club"
                       class="mt-3 px-2"
                       id="altitude1"
                       title="Inline Frame Example"

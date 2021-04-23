@@ -88,23 +88,6 @@ describe('getters', () => {
     })
   })
 
-  describe('getMissionTypeName method', () => {
-    const state = {
-      missionTypes: [
-        { id: 1, name: 'type1' },
-        { id: 2, name: 'type2' }
-      ]
-    }
-
-    it('Should return correct result', () => {
-      expect(getters.getMissionTypeName(state)(1)).toEqual('type1')
-    })
-
-    it('Should return default value if no missionType with provided id', () => {
-      expect(getters.getMissionTypeName(state)(111)).toEqual('Unknown')
-    })
-  })
-
   describe('agencyTypeNames method', () => {
     const state = {
       agencies: [
@@ -119,12 +102,12 @@ describe('getters', () => {
     })
   })
 
-  describe('agencyCountries, method', () => {
+  describe('agencyCountries method', () => {
     const state = {
       agencies: [
-        { countryCode: 'a' },
-        { countryCode: 'b' },
-        { countryCode: 'c' },
+        { country: 'a' },
+        { country: 'b' },
+        { country: 'c' },
       ]
     }
 
@@ -140,14 +123,14 @@ describe('getters', () => {
           id: 1,
           name: 'name1',
           continent: 'continent1',
-          countryName: 'countryName1',
+          country: 'country1',
           type: 'type1'
         },
         {
           id: 2,
           name: 'name2',
           continent: 'continent2',
-          countryName: 'countryName2',
+          country: 'country2',
           type: 'type2'
         }
       ]
@@ -158,13 +141,13 @@ describe('getters', () => {
         1: {
           name: 'name1',
           continent: 'continent1',
-          countryName: 'countryName1',
+          country: 'country1',
           type: 'type1'
         },
         2: {
           name: 'name2',
           continent: 'continent2',
-          countryName: 'countryName2',
+          country: 'country2',
           type: 'type2'
         }
       })

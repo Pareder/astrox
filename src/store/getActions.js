@@ -60,13 +60,11 @@ const getActions = (api, localStorage = window.localStorage) => {
 
     async getAgenciesInfo ({ commit }) {
       if (localStorage.getItem('launchAgencies')) {
-        return commit('SET_AGENCIES', JSON.parse(localStorage.getItem('launchAgencies')))
+        return commit(types.SET_AGENCIES, JSON.parse(localStorage.getItem('launchAgencies')))
       }
 
-      const [agencies, agencyTypes, agencyContinents] = await api.getAgenciesInfo()
+      const agencies = await api.getAgenciesInfo()
       commit(types.SET_AGENCIES, agencies)
-      commit(types.SET_AGENCY_TYPES, agencyTypes)
-      commit(types.SET_AGENCY_CONTINENT, agencyContinents)
     },
 
     async getAgencyAllLaunches ({ commit }, id) {
@@ -112,15 +110,6 @@ const getActions = (api, localStorage = window.localStorage) => {
     async getLaunchDetails ({ commit }, id) {
       const data = await api.getLaunchDetails(id)
       commit(types.SET_LAUNCH_DETAILS, { id, data })
-    },
-
-    async getMissionTypes ({ commit }) {
-      if (localStorage.getItem('missionTypes')) {
-        return commit(types.SET_MISSION_TYPES, JSON.parse(localStorage.getItem('missionTypes')))
-      }
-
-      const missionTypes = await api.getMissionTypes()
-      commit(types.SET_MISSION_TYPES, missionTypes)
     },
 
     async getRocket ({ commit }, name) {

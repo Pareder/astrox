@@ -11,10 +11,10 @@ import {
 } from '../index'
 
 const launches = [
-  { status: 1 },
-  { status: 2 },
-  { status: 3 },
-  { status: 4 },
+  { status: { id: 1 } },
+  { status: { id: 2 } },
+  { status: { id: 3 } },
+  { status: { id: 4 } },
 ]
 
 describe('utils functionality', () => {

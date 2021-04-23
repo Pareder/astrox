@@ -87,7 +87,8 @@ export default {
             this.setLaunchesByYears()
             this.$Progress.finish()
           })
-          .catch(() => {
+          .catch((e) => {
+            console.log(e)
             this.$Progress.fail()
           })
       }

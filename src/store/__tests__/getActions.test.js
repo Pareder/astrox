@@ -141,9 +141,7 @@ describe('vuex actions', () => {
       const fn = getMethod({ method, data })
       await fn()
 
-      expect(commitMock).toBeCalledWith('SET_AGENCIES', data[0])
-      expect(commitMock).toBeCalledWith('SET_AGENCY_TYPES', data[1])
-      expect(commitMock).toBeCalledWith('SET_AGENCY_CONTINENT', data[2])
+      expect(commitMock).toBeCalledWith('SET_AGENCIES', data)
     })
   })
 
@@ -279,34 +277,6 @@ describe('vuex actions', () => {
       await fn(id)
 
       expect(commitMock).toBeCalledWith('SET_LAUNCH_DETAILS', { id, data })
-    })
-  })
-
-  describe('getMissionTypes method', () => {
-    const method = 'getMissionTypes'
-
-    it('Should call localStorage getItem method', async () => {
-      const fn = getMethod({ method })
-      await fn()
-
-      expect(localStorageMock.getItem).toBeCalledWith('missionTypes')
-    })
-
-    it('Should call commit with localStorage data', async () => {
-      const data = [1, 2, 3]
-      const localStorage = getLocalStorage(data)
-      const fn = getMethod({ method, localStorage })
-      await fn()
-
-      expect(commitMock).toBeCalledWith('SET_MISSION_TYPES', data)
-    })
-
-    it('Should call commit with api data', async () => {
-      const data = [1, 2, 3]
-      const fn = getMethod({ method, data })
-      await fn()
-
-      expect(commitMock).toBeCalledWith('SET_MISSION_TYPES', data)
     })
   })
 

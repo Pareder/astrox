@@ -1,16 +1,22 @@
+import url from 'url'
 import API from '../index'
 
 const httpMock = {
-  get: jest.fn(async () => ({ body: {} }))
+  get: jest.fn(async () => ({
+    body: {
+      results: []
+    }
+  }))
 }
 const configMock = {
   apiServer: 'api.com',
   spaceXApi: 'spacex.com',
   SPACEX_ID: 11111
 }
+const limitMock = 100
 
-function getAPI (http = httpMock, config = configMock) {
-  return new API(http, config)
+function getAPI (http = httpMock, config = configMock, limit = limitMock) {
+  return new API(http, config, limit)
 }
 
 function getHttpMock (result) {
@@ -26,28 +32,82 @@ describe('API class', () => {
     })
   })
 
-  describe('getLaunchesByDate method', () => {
+  describe('getPresentYearLaunches method', () => {
     it('Should call http.get with correct parameters', async () => {
+      jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2021-01-01T00:00:00.000Z')
+      const currentYear = new Date().getFullYear()
       const api = getAPI()
-      await api.getLaunchesByDate('2000-00-00', '2001-00-00')
 
-      expect(httpMock.get).toBeCalledWith('api.com/launch/2000-00-00/2001-00-00?limit=-1')
+      await api.getPresentYearLaunches()
+
+      expect(httpMock.get).toBeCalledWith(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/launch/',
+        query: {
+          net__gte: '2021-01-01T00:00:00.000Z',
+          net__lt: new Date(currentYear, 11, 31).toISOString(),
+          limit: limitMock
+        }
+      }))
     })
 
     it('Should return correct values', async () => {
-      const launches = [1, 2, 3, 4, 5]
-      const http = getHttpMock({ body: { launches } })
+      const results = [1, 2, 3, 4, 5]
+      const http = getHttpMock({ body: { results } })
       const api = getAPI(http)
-      const result = await api.getLaunchesByDate()
 
-      expect(result).toEqual(launches)
+      const result = await api.getPresentYearLaunches()
+
+      expect(result).toEqual(result)
     })
 
     it('Should reject if error has been occurred', () => {
       const http = getHttpMock(Promise.reject({}))
       const api = getAPI(http)
 
-      expect(api.getLaunchesByDate()).rejects.toEqual({})
+      expect(api.getPresentYearLaunches()).rejects.toEqual({})
+    })
+  })
+
+  describe('getLaunchesByDate method', () => {
+    const date = new Date()
+
+    it('Should call http.get with correct parameters', async () => {
+      jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2000-01-01T00:00:00.000Z')
+      const api = getAPI()
+
+      await api.getLaunchesByDate(date)
+
+      expect(httpMock.get).toBeCalledWith(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/launch/',
+        query: {
+          net__gte: date.toISOString(),
+          net__lt: '2000-01-01T00:00:00.000Z',
+          limit: limitMock
+        }
+      }))
+    })
+
+    it('Should return correct values', async () => {
+      const results = [1, 2, 3, 4, 5]
+      const http = getHttpMock({
+        body: {
+          results
+        }
+      })
+      const api = getAPI(http)
+
+      const result = await api.getLaunchesByDate(date)
+
+      expect(result).toEqual(results)
+    })
+
+    it('Should reject if error has been occurred', () => {
+      const http = getHttpMock(Promise.reject({}))
+      const api = getAPI(http)
+
+      expect(api.getLaunchesByDate(date)).rejects.toEqual({})
     })
   })
 
@@ -56,6 +116,7 @@ describe('API class', () => {
       const http = getHttpMock({ body: {} })
       const api = getAPI(http)
       const numberOfCalls = new Date().getFullYear() - 2000 + 1
+
       await api.getHistory()
 
       expect(http.get).toHaveBeenCalledTimes(numberOfCalls)
@@ -64,46 +125,51 @@ describe('API class', () => {
     it('Should call http.get for previous years with correct parameters', async () => {
       const http = getHttpMock({ body: {} })
       const api = getAPI(http)
+
       await api.getHistory()
 
       for (let year = 2000, i = 0; year < new Date().getFullYear(); year++, i++) {
-        expect(http.get.mock.calls[i][0]).toBe(`api.com/launch?startdate=${year}-01-01&enddate=${year}-12-31&limit=1`)
+        expect(http.get.mock.calls[i][0]).toBe(url.format({
+          hostname: configMock.apiServer,
+          pathname: '/launch/',
+          query: {
+            net__gte: new Date(year, 0, 1).toISOString(),
+            net__lte: new Date(year, 11, 31).toISOString(),
+            limit: 0
+          }
+        }))
       }
     })
 
     it('Should call http.get for current year with today date', async () => {
+      jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2021-01-01T00:00:00.000Z')
       const http = getHttpMock({ body: {} })
       const api = getAPI(http)
-      const currentYear = new Date().getFullYear()
-      let currentMonth = new Date().getMonth() + 1
-
-      if (currentMonth < 10) {
-        currentMonth = '0' + currentMonth
-      }
-
-      let currentDay = new Date().getDate()
-
-      if (currentDay < 10) {
-        currentDay = '0' + currentDay
-      }
 
       await api.getHistory()
 
-      expect(http.get).toHaveBeenLastCalledWith(
-        `api.com/launch?startdate=${currentYear}-01-01&enddate=${currentYear}-${currentMonth}-${currentDay}&limit=1`
-      )
+      expect(http.get).toHaveBeenLastCalledWith(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/launch/',
+        query: {
+          net__gte: new Date(new Date().getFullYear(), 0, 1).toISOString(),
+          net__lte: '2021-01-01T00:00:00.000Z',
+          limit: 0
+        }
+      }))
     })
 
     it('Should return correct values', async () => {
-      const total = 10
+      const count = 10
       const expectedResult = []
 
       for (let year = 2000; year <= new Date().getFullYear(); year++) {
-        expectedResult.push({ amount: total, year })
+        expectedResult.push({ amount: count, year })
       }
 
-      const http = getHttpMock({ body: { total } })
+      const http = getHttpMock({ body: { count } })
       const api = getAPI(http)
+
       const result = await api.getHistory()
 
       expect(result).toEqual(expectedResult)
@@ -121,18 +187,28 @@ describe('API class', () => {
     it('Should call http.get with correct parameters', async () => {
       const year = 2000
       const api = getAPI()
+
       await api.getHistoryLaunches(year)
 
-      expect(httpMock.get).toBeCalledWith(`api.com/launch?startdate=${year}-01-01&enddate=${year}-12-31&limit=-1`)
+      expect(httpMock.get).toBeCalledWith(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/launch/',
+        query: {
+          net__gte: new Date(year, 0, 1).toISOString(),
+          net__lte: new Date(year, 11, 31).toISOString(),
+          limit: limitMock
+        }
+      }))
     })
 
     it('Should return correct values', async () => {
-      const launches = [1, 2, 3, 4, 5]
-      const http = getHttpMock({ body: { launches } })
+      const results = [1, 2, 3, 4, 5]
+      const http = getHttpMock({ body: { results } })
       const api = getAPI(http)
+
       const result = await api.getHistoryLaunches()
 
-      expect(result).toEqual(launches)
+      expect(result).toEqual(results)
     })
 
     it('Should reject if error has been occurred', () => {
@@ -148,40 +224,46 @@ describe('API class', () => {
       const currentYear = new Date().getFullYear()
       const http = getHttpMock({
         body: {
-          launches: [{
+          results: [{
             net: new Date().setFullYear(currentYear + 10)
           }]
         }
       })
       const api = getAPI(http)
+
       await api.getAllUpcomingLaunches()
 
       for (let year = new Date().getFullYear(), i = 1; year <= currentYear + 10; year++, i++) {
-        const currentMonth = new Date().getMonth() + 1 > 9 ? new Date().getMonth() + 1 : `0${new Date().getMonth() + 1}`
-        const currentDate = new Date().getDate() > 9 ? new Date().getDate() : '0' + new Date().getDate()
-        const startDate = year === currentYear ? `${currentYear}-${currentMonth}-${currentDate}` : `${year}-01-01`
-
-        expect(http.get.mock.calls[i][0]).toEqual(`api.com/launch?startdate=${startDate}&enddate=${year}-12-31&limit=1`)
+        expect(http.get.mock.calls[i][0]).toEqual(url.format({
+          hostname: configMock.apiServer,
+          pathname: '/launch/',
+          query: {
+            net__gte: new Date(year, 0, 1).toISOString(),
+            net__lte: new Date(year, 11, 31).toISOString(),
+            limit: 0
+          }
+        }))
       }
     })
 
     it('Should return correct values', async () => {
       const currentYear = new Date().getFullYear()
       const launchNet = new Date().setFullYear(currentYear + 10)
-      const launches = [{ net: launchNet, }]
+      const results = [{ net: launchNet, }]
       const expectedResult = []
 
       for (let year = currentYear; year <= currentYear + 10; year++) {
         expectedResult.push({
           year,
           amount: 1,
-          ...(year == currentYear ? { nextLaunch: launchNet } : {})
+          ...(year === currentYear ? { nextLaunch: launchNet } : {})
         })
 
       }
 
-      const http = getHttpMock({ body: { launches, total: 1 } })
+      const http = getHttpMock({ body: { results, count: 1 } })
       const api = getAPI(http)
+
       const result = await api.getAllUpcomingLaunches()
 
       expect(result).toEqual(expectedResult)
@@ -197,23 +279,33 @@ describe('API class', () => {
 
   describe('getAgenciesInfo method', () => {
     it('Should call http.get with correct parameters', async () => {
-      const http = getHttpMock({ body: {} })
+      const http = getHttpMock({ body: { results: [] } })
       const api = getAPI(http)
+
       await api.getAgenciesInfo()
 
-      expect(http.get.mock.calls[0][0]).toEqual('api.com/lsp?limit=-1')
-      expect(http.get.mock.calls[1][0]).toEqual('api.com/agencytype')
-      expect(http.get.mock.calls[2][0]).toEqual('/countries.json')
+      expect(http.get.mock.calls[0][0]).toEqual(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/agencies/',
+        query: {
+          limit: limitMock
+        }
+      }))
+      expect(http.get.mock.calls[1][0]).toEqual('/countries.json')
     })
 
     it('Should return correct values', async () => {
-      const agencies = [1, 2, 3, 4, 5]
-      const types = [1, 2, 3]
-      const http = getHttpMock({ body: { agencies, types } })
+      const results = [
+        { name: 'a' },
+        { name: 'b' },
+        { name: 'c' }
+      ]
+      const http = getHttpMock({ body: { results } })
       const api = getAPI(http)
+
       const result = await api.getAgenciesInfo()
 
-      expect(result).toEqual([agencies, types, { agencies, types }])
+      expect(result).toEqual(results)
     })
 
     it('Should reject if error has been occurred', () => {
@@ -228,18 +320,27 @@ describe('API class', () => {
     it('Should call http.get with correct parameters', async () => {
       const id = 1
       const api = getAPI()
+
       await api.getAgencyAllLaunches(id)
 
-      expect(httpMock.get).toBeCalledWith(`api.com/launch?lsp=${id}&limit=-1`)
+      expect(httpMock.get).toBeCalledWith(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/launch/',
+        query: {
+          lsp__id: id,
+          limit: limitMock
+        }
+      }))
     })
 
     it('Should return correct values', async () => {
-      const launches = [1, 2, 3, 4, 5]
-      const http = getHttpMock({ body: { launches } })
+      const results = [1, 2, 3, 4, 5]
+      const http = getHttpMock({ body: { results } })
       const api = getAPI(http)
+
       const result = await api.getAgencyAllLaunches()
 
-      expect(result).toEqual(launches)
+      expect(result).toEqual(results)
     })
 
     it('Should reject if error has been occurred', () => {
@@ -252,22 +353,31 @@ describe('API class', () => {
 
   describe('getSpaceXLaunches method', () => {
     it('Should call http.get with correct parameters', async () => {
-      const http = getHttpMock({ body: {} })
+      const http = getHttpMock({ body: { results: [] } })
       const api = getAPI(http)
+
       await api.getSpaceXLaunches()
 
-      expect(http.get.mock.calls[0][0]).toEqual('api.com/launch?lsp=11111&limit=-1')
+      expect(http.get.mock.calls[0][0]).toEqual(url.format({
+        hostname: configMock.apiServer,
+        pathname: '/launch/',
+        query: {
+          lsp__id: configMock.SPACEX_ID,
+          limit: limitMock
+        }
+      }))
       expect(http.get.mock.calls[1][0]).toEqual('spacex.com/launches')
       expect(http.get.mock.calls[2][0]).toEqual('spacex.com/launchpads')
     })
 
     it('Should return correct values', async () => {
-      const launches = [1, 2, 3, 4, 5]
-      const http = getHttpMock({ body: { launches } })
+      const results = [1, 2, 3, 4, 5]
+      const http = getHttpMock({ body: { results } })
       const api = getAPI(http)
+
       const result = await api.getSpaceXLaunches()
 
-      expect(result).toEqual([launches, { launches }, { launches }])
+      expect(result).toEqual([results, { results }, { results }])
     })
 
     it('Should reject if error has been occurred', () => {
@@ -281,20 +391,22 @@ describe('API class', () => {
   describe('getLaunchDetails method', () => {
     it('Should call http.get with correct parameters', async () => {
       const id = 1
-      const http = getHttpMock({ body: { launches: [] } })
+      const http = getHttpMock({ body: { results: [] } })
       const api = getAPI(http)
+
       await api.getLaunchDetails(id)
 
-      expect(http.get).toBeCalledWith(`api.com/launch/${id}`)
+      expect(http.get).toBeCalledWith(`api.com/launch/${id}/`)
     })
 
     it('Should return correct values', async () => {
-      const launches = [1]
-      const http = getHttpMock({ body: { launches } })
+      const body = { name: 'a' }
+      const http = getHttpMock({ body })
       const api = getAPI(http)
+
       const result = await api.getLaunchDetails()
 
-      expect(result).toEqual(launches[0])
+      expect(result).toEqual(body)
     })
 
     it('Should reject if error has been occurred', () => {
@@ -302,31 +414,6 @@ describe('API class', () => {
       const api = getAPI(http)
 
       expect(api.getLaunchDetails()).rejects.toEqual({})
-    })
-  })
-
-  describe('getMissionTypes method', () => {
-    it('Should call http.get with correct parameters', async () => {
-      const api = getAPI()
-      await api.getMissionTypes()
-
-      expect(httpMock.get).toBeCalledWith('api.com/missiontype')
-    })
-
-    it('Should return correct values', async () => {
-      const types = [1, 2, 3]
-      const http = getHttpMock({ body: { types } })
-      const api = getAPI(http)
-      const result = await api.getMissionTypes()
-
-      expect(result).toEqual(types)
-    })
-
-    it('Should reject if error has been occurred', () => {
-      const http = getHttpMock(Promise.reject({}))
-      const api = getAPI(http)
-
-      expect(api.getMissionTypes()).rejects.toEqual({})
     })
   })
 
@@ -353,36 +440,6 @@ describe('API class', () => {
       const api = getAPI(http)
 
       expect(api.getRocket()).rejects.toEqual({})
-    })
-  })
-
-  describe('getPresentYearLaunches method', () => {
-    it('Should call http.get with correct parameters', async () => {
-      const currentYear = new Date().getFullYear()
-      const currentMonth = new Date().getMonth() + 1 > 9 ? new Date().getMonth() + 1 : `0${new Date().getMonth() + 1}`
-      const currentDay = new Date().getDate() > 9 ? new Date().getDate() : `0${new Date().getDate()}`
-      const api = getAPI()
-      await api.getPresentYearLaunches()
-
-      expect(httpMock.get).toBeCalledWith(
-        `api.com/launch/${currentYear}-${currentMonth}-${currentDay}/${currentYear}-12-31?limit=-1`
-      )
-    })
-
-    it('Should return correct values', async () => {
-      const launches = [1, 2, 3, 4, 5]
-      const http = getHttpMock({ body: { launches } })
-      const api = getAPI(http)
-      const result = await api.getPresentYearLaunches()
-
-      expect(result).toEqual(result)
-    })
-
-    it('Should reject if error has been occurred', () => {
-      const http = getHttpMock(Promise.reject({}))
-      const api = getAPI(http)
-
-      expect(api.getPresentYearLaunches()).rejects.toEqual({})
     })
   })
 })
