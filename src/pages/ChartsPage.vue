@@ -164,12 +164,16 @@ export default {
             fill: true,
             backgroundColor: getAlphaColor(color),
             borderColor: color,
-            data: config.continents.map(continent => {
-              return this.launches.filter(item => {
-                return this.agencies[item.launch_service_provider] &&
-                  this.agencies[item.launch_service_provider].continent === continent
-              }).length
-            }),
+            data: Object.values(this.launches.reduce(
+              (continents, launch) => {
+                const continent = this.agencies[launch?.launch_service_provider?.id]?.continent
+                return {
+                  ...continents,
+                  ...(continents[continent] ? { [continent]: continents[continent] + 1 } : { [continent]: 1 })
+                }
+              },
+              config.continents.reduce((obj, continent) => ({ ...obj, [continent]: 0 }), {})
+            )),
             pointRadius: 5,
             pointBackgroundColor: color
           }

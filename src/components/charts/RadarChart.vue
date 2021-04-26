@@ -38,6 +38,19 @@ export default {
         },
         tooltips: {
           callbacks: {
+            title: ([tooltipItem], data) => {
+              const index = tooltipItem?.index
+              const values = data.datasets[0].data
+              if(values[index] === 0) {
+                // Returning all labels with value equal to 0
+                return values
+                  .reduce((arr, value, index) => value === 0 ? [...arr, index] : arr, [])
+                  .map(index => data?.labels[index])
+                  .join(', ')
+              }
+
+              return data?.labels[index]
+            },
             label: (tooltipItem, data) => {
               const allData = data.datasets[tooltipItem.datasetIndex].data
               const tooltipData = allData[tooltipItem.index]
