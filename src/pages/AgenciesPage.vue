@@ -47,7 +47,7 @@
         >
           <v-card
             :color="itemsToCompare.includes(agency.id) ? 'primary' : ''"
-            :dark="itemsToCompare.includes(agency.id) ? true : false"
+            :dark="itemsToCompare.includes(agency.id)"
           >
             <v-card-title class="justify-center">
               <v-btn class="absolute_btn" outline icon @click="compareAgencies(agency.id)">
@@ -61,7 +61,9 @@
               >
                 <v-icon>assessment</v-icon>
               </v-btn>
-              <span class="grey--text pt-2">{{ agency.type }}, {{ agency.countryCode }}</span>
+              <span class="grey--text pt-2 infoText">
+                {{ [agency.type, agency.country_code].filter(Boolean).join(', ') }}
+              </span>
             </v-card-title>
           </v-card>
         </v-flex>
@@ -85,7 +87,7 @@
         fab
         @click="getComparingAgencies"
       >
-        <v-icon>add</v-icon>
+        <v-icon class="icon">add</v-icon>
       </v-btn>
     </v-fab-transition>
     <v-snackbar v-model="alert" top multi-line :timeout="6000" color="red">
@@ -143,7 +145,8 @@ export default {
         .then(() => {
           this.$Progress.finish()
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log(e)
           this.$Progress.fail()
         })
     }
@@ -156,7 +159,7 @@ export default {
           return false
         }
 
-        if (this.countryModel && this.countryModel !== 'All' && item.countryCode !== this.countryModel) {
+        if (this.countryModel && this.countryModel !== 'All' && item.country !== this.countryModel) {
           return false
         }
 
@@ -275,5 +278,14 @@ export default {
     background: #fff;
     color: #F44336;
     border-radius: 50%;
+  }
+
+  .infoText {
+    word-break: break-all;
+  }
+
+  .icon {
+    width: auto;
+    height: auto;
   }
 </style>

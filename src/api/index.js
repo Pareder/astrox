@@ -1,27 +1,42 @@
 import Vue from 'vue'
 import url from 'url'
 import config from '../config'
-import { zeroTime } from '../utils'
 
 class API {
-  constructor (http, config) {
+  constructor (http, config, limit) {
     this._http = http
     this._config = config
+    this._limit = limit
   }
 
   static create () {
-    return new API(Vue.http, config)
+    return new API(Vue.http, config, 100)
   }
 
-  async getLaunchesByDate (startDate, endDate) {
-    const response = await this._http.get(url.format({
-      pathname: `${this._config.apiServer}/launch/${startDate}/${endDate}`,
+  async getPresentYearLaunches () {
+    const startDate = new Date().toISOString()
+    const endDate = new Date(new Date().getFullYear(), 11, 31).toISOString()
+
+    return await this._getDataWithLimit(url.format({
+      pathname: `${this._config.apiServer}/launch/`,
       query: {
-        limit: -1
+        net__gte: startDate,
+        net__lt: endDate
       }
     }))
+  }
 
-    return response.body.launches
+  async getLaunchesByDate (date) {
+    const currentDate = new Date()
+    const isGTCurrentDate = date > currentDate
+
+    return await this._getDataWithLimit(url.format({
+      pathname: `${this._config.apiServer}/launch/`,
+      query: {
+        net__gte: isGTCurrentDate ? currentDate.toISOString() : date.toISOString(),
+        net__lt: isGTCurrentDate ? date.toISOString() : currentDate.toISOString()
+      }
+    }))
   }
 
   async getHistory () {
@@ -30,24 +45,18 @@ class API {
 
     for (let year = 2000; year <= currentYear; year++) {
       const promise = async () => {
-        let finalYear = year + '-12-31'
-
-        if (year === currentYear) {
-          finalYear = `${year}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
-        }
-
         const response = await this._http.get(url.format({
-          pathname: `${this._config.apiServer}/launch`,
+          pathname: `${this._config.apiServer}/launch/`,
           query: {
-            startdate: `${year}-01-01`,
-            enddate: `${finalYear || (year + '-12-31')}`,
-            limit: 1
+            net__gte: new Date(year, 0, 1).toISOString(),
+            net__lte: year === currentYear ? new Date().toISOString() : new Date(year, 11, 31).toISOString(),
+            limit: 0
           }
         }))
 
         return {
           year,
-          amount: response.body.total
+          amount: response.body.count
         }
       }
 
@@ -58,16 +67,13 @@ class API {
   }
 
   async getHistoryLaunches (year) {
-    const response = await this._http.get(url.format({
-      pathname: `${this._config.apiServer}/launch`,
+    return await this._getDataWithLimit(url.format({
+      pathname: `${this._config.apiServer}/launch/`,
       query: {
-        startdate: `${year}-01-01`,
-        enddate: `${year}-12-31`,
-        limit: -1
+        net__gte: new Date(year, 0, 1).toISOString(),
+        net__lte: new Date(year, 11, 31).toISOString()
       }
     }))
-
-    return response.body.launches
   }
 
   async getAllUpcomingLaunches () {
@@ -78,25 +84,20 @@ class API {
 
     for (let year = currentYear; year <= lastLaunchYear; year++) {
       const promise = async () => {
-        let presentYear = null
-
-        if (year === currentYear) {
-          presentYear = `${year}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
-        }
-
+        const presentYear = year === currentYear
         const response = await this._http.get(url.format({
-          pathname: `${this._config.apiServer}/launch`,
+          pathname: `${this._config.apiServer}/launch/`,
           query: {
-            startdate: `${presentYear || year + '-01-01'}`,
-            enddate: `${year + '-12-31'}`,
-            limit: 1
+            net__gte: presentYear ? new Date().toISOString() : new Date(year, 0, 1).toISOString(),
+            net__lte: new Date(year, 11, 31).toISOString(),
+            limit: 0
           }
         }))
 
         return {
           year,
-          amount: response.body.total,
-          ...(presentYear ? { nextLaunch: response.body.launches[0].net } : {})
+          amount: response.body.count,
+          ...(presentYear ? { nextLaunch: response.body.results[0].net } : {})
         }
       }
 
@@ -107,54 +108,35 @@ class API {
   }
 
   async getAgenciesInfo () {
-    const getAgencies = async () => {
-      const response = await this._http.get(url.format({
-        pathname: `${this._config.apiServer}/lsp`,
-        query: {
-          limit: -1
-        }
-      }))
-
-      return response.body.agencies
-    }
-    const getAgencyTypes = async () => {
-      const response = await this._http.get(`${this._config.apiServer}/agencytype`)
-
-      return response.body.types
-    }
+    const getAgencies = async () => await this._getDataWithLimit(`${this._config.apiServer}/agencies/`)
     const getContinents = async () => {
       const response = await this._http.get('/countries.json')
 
       return response.body
     }
 
-    return await Promise.all([getAgencies(), getAgencyTypes(), getContinents()])
+    return Promise.all([getAgencies(), getContinents()])
+      .then(([agencies, agencyContinents]) => {
+        return agencies
+          .filter(({ name }) => name.toLowerCase() !== 'unknown')
+          .map(agency => ({
+            ...agency,
+            continent: (agencyContinents[agency.country_code] || {}).continent,
+            country: (agencyContinents[agency.country_code] || {}).country
+          }))
+      })
   }
 
   async getAgencyAllLaunches (id) {
-    const response = await this._http.get(url.format({
-      pathname: `${this._config.apiServer}/launch`,
+    return await this._getDataWithLimit(url.format({
+      pathname: `${this._config.apiServer}/launch/`,
       query: {
-        lsp: id,
-        limit: -1
+        lsp__id: id
       }
     }))
-
-    return response.body.launches
   }
 
   async getSpaceXLaunches () {
-    const getAllLaunches = async () => {
-      const response = await this._http.get(url.format({
-        pathname: `${this._config.apiServer}/launch`,
-        query: {
-          lsp: this._config.SPACEX_ID,
-          limit: -1
-        }
-      }))
-
-      return response.body.launches
-    }
     const getOfficialLaunches = async () => {
       const response = await this._http.get(`${this._config.spaceXApi}/launches`)
 
@@ -166,19 +148,17 @@ class API {
       return response.body
     }
 
-    return await Promise.all([getAllLaunches(), getOfficialLaunches(), getLocations()])
+    return await Promise.all([
+      this.getAgencyAllLaunches(this._config.SPACEX_ID),
+      getOfficialLaunches(),
+      getLocations()
+    ])
   }
 
   async getLaunchDetails (id) {
-    const response = await this._http.get(`${this._config.apiServer}/launch/${id}`)
+    const response = await this._http.get(`${this._config.apiServer}/launch/${id}/`)
 
-    return response.body.launches[0]
-  }
-
-  async getMissionTypes () {
-    const response = await this._http.get(`${this._config.apiServer}/missiontype`)
-
-    return response.body.types
+    return response.body
   }
 
   async getRocket (name) {
@@ -187,31 +167,36 @@ class API {
     return response.body
   }
 
-  async getPresentYearLaunches () {
-    const currentYear = new Date().getFullYear()
-    const startDate = `${currentYear}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
-    const endDate = `${currentYear}-12-31`
-
+  async _getLastLaunch () {
     const response = await this._http.get(url.format({
-      pathname: `${this._config.apiServer}/launch/${startDate}/${endDate}`,
+      pathname: `${this._config.apiServer}/launch/`,
       query: {
-        limit: -1
+        ordering: '-net',
+        limit: 1
       }
     }))
 
-    return response.body.launches
+   return new Date(response.body.results[0].net).getFullYear()
   }
 
-  async _getLastLaunch () {
-    const lastLaunch = await this._http.get(url.format({
-      pathname: `${this._config.apiServer}/launch`,
+  async _getDataWithLimit(path, data = []) {
+    const { protocol, host, pathname, query } = url.parse(path, true)
+    const response = await this._http.get(url.format({
+      protocol,
+      host,
+      pathname,
       query: {
-        next: 1,
-        sort: 'desc'
+        ...query,
+        limit: this._limit
       }
     }))
+    const results = [...data, ...response.body.results]
 
-   return new Date(lastLaunch.body.launches[0].net).getFullYear()
+    if(response.body.count > results.length) {
+      return await this._getDataWithLimit(response.body.next, results)
+    }
+
+    return results
   }
 }
 

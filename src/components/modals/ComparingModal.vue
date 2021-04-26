@@ -25,7 +25,7 @@
           </v-data-table>
         </v-flex>
         <v-layout wrap justify-space-around class="mt-3">
-          <v-flex xs12 sm6 md4 v-for="(name, id) in agencyNameWithLaunches" :key="id" >
+          <v-flex xs12 sm6 md4 v-for="(name, id) in names" :key="id" >
             <PieChart :chartData="getPieChartData(id)" :title="name" :noLegend="true" />
           </v-flex>
         </v-layout>

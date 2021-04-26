@@ -4,7 +4,7 @@
   <img src="public/astrox.png" alt="AstroX">
 </p>
 
-> AstroX is built on [open rocket launches API](https://launchlibrary.net/docs/1.4.1/api.html) and represents the statistics of past and upcoming rocket launches
+> AstroX is built on [open rocket launches API](https://thespacedevs.com/) and represents the statistics of past and upcoming rocket launches
 
 ## Used
 

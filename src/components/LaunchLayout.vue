@@ -11,11 +11,11 @@
               <v-icon>business</v-icon>
             </v-avatar>
             <v-list-tile-content>
-              <v-list-tile-title v-if="launch.lsp" class="normal-space">
-                <router-link class="no-underline" :to="`/agencies/${launch.lsp.id}`">
-                  {{ launch.lsp.name }}
+              <v-list-tile-title v-if="launch.launch_service_provider" class="normal-space">
+                <router-link class="no-underline" :to="`/agencies/${launch.launch_service_provider.id}`">
+                  {{ launch.launch_service_provider.name }}
                 </router-link>,
-                {{ launch.lsp.countryCode }}
+                {{ launch.launch_service_provider.type }}
               </v-list-tile-title>
               <v-list-tile-title v-else class="normal-space">
                 Unknown
@@ -30,33 +30,27 @@
               <v-icon>access_time</v-icon>
             </v-avatar>
             <v-list-tile-content class="visible-overflow">
-              <v-list-tile-title v-if="past">{{ new Date(launch.net).toLocaleString() }}</v-list-tile-title>
-              <v-list-tile-title v-else class="visible-overflow">
-                <v-tooltip top>
-                  <v-badge color="transparent" slot="activator">
-                    <v-icon slot="badge" v-if="launch.tbddate === 1 || launch.tbdtime === 1" small>info</v-icon>
-                    {{ new Date(launch.net).toLocaleString() }}
-                  </v-badge>
-                  <span v-if="launch.tbddate === 1 || launch.tbdtime === 1">Launch date is not exact</span>
-                  <span v-else>Launch date</span>
-                </v-tooltip>
-              </v-list-tile-title>
+              <v-list-tile-title>{{ new Date(launch.net).toLocaleString() }}</v-list-tile-title>
               <v-list-tile-sub-title>Launch Date</v-list-tile-sub-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile avatar v-if="past">
+          <v-list-tile avatar>
             <v-tooltip top>
               <v-avatar slot="activator">
-                <v-icon :color="launch.status === 3 ? 'light-green' : 'red'">
-                  {{ launch.status === 3 ? 'check' : 'error_outline' }}
+                <v-icon v-if="launch.status.id === 3" color="light-green">
+                  check
+                </v-icon>
+                <v-icon v-else-if="launch.status.id === 4" color="red">
+                  error_outline
+                </v-icon>
+                <v-icon v-else color="gray">
+                  {{ launch.status.id === 1 ? 'check' : 'warning' }}
                 </v-icon>
               </v-avatar>
-              <span v-if="launch.failreason">{{ launch.failreason }}</span>
-              <span v-else-if="launch.status === 4">Failed</span>
-              <span v-else>Success</span>
+              <span>{{ launch.status.description }}</span>
             </v-tooltip>
             <v-list-tile-content>
-              <v-list-tile-title>{{ launch.status === 3 ? 'Success' : 'Failed' }}</v-list-tile-title>
+              <v-list-tile-title>{{ launch.status.abbrev }}</v-list-tile-title>
               <v-list-tile-sub-title>Launch Status</v-list-tile-sub-title>
             </v-list-tile-content>
           </v-list-tile>
@@ -92,7 +86,8 @@ export default {
       launchClicked: null,
       visibleLaunches: [],
       numberOfLaunches: 10,
-      currentNumber: 0
+      currentNumber: 0,
+      ticking: false
     }
   },
 
@@ -100,9 +95,6 @@ export default {
     launches: {
       type: Array
     },
-    past: {
-      type: Boolean
-    }
   },
 
   computed: {
@@ -116,13 +108,25 @@ export default {
       this.setVisibleLaunches()
 
       window.onscroll = () => {
-        const bottomOfWindow = (document.documentElement.scrollTop + window.innerHeight) === document.documentElement.offsetHeight
+        // Optimization for the scroll event
+        if (!this.ticking) {
+          window.requestAnimationFrame(() => {
+            const bottomOfWindow = (document.documentElement.scrollTop + window.innerHeight) === document.documentElement.offsetHeight
+            if (bottomOfWindow) {
+              this.setVisibleLaunches()
+            }
 
-        if (bottomOfWindow) {
-          this.setVisibleLaunches()
+            this.ticking = false
+          })
+
+          this.ticking = true
         }
       }
     }
+  },
+
+  destroyed () {
+    window.onscroll = undefined
   },
 
   watch: {

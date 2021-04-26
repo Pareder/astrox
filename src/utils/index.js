@@ -1,25 +1,24 @@
-const PENDING_STATUS = [1, 2]
 const SUCCESS_STATUS = 3
 const FAILED_STATUS = 4
 
 export const zeroTime = val => {
   if (Number.isInteger(val)) {
-    return val > 9 ? val.toString() : '0' + val
+    return val >= 10 ? val.toString() : '0' + val
   }
 
   return '00'
 }
 
 export const getPendingLaunchesCount = launches => {
-  return launches.filter(launch => PENDING_STATUS.some(status => status === launch.status)).length
+  return launches.filter(launch => launch?.status?.id !== SUCCESS_STATUS && launch?.status?.id !== FAILED_STATUS).length
 }
 
 export const getSuccessfulLaunchesCount = launches => {
-  return launches.filter(launch => launch.status === SUCCESS_STATUS).length
+  return launches.filter(launch => launch?.status?.id === SUCCESS_STATUS).length
 }
 
 export const getFailedLaunchesCount = launches => {
-  return launches.filter(launch => launch.status === FAILED_STATUS || launch.failreason).length
+  return launches.filter(launch => launch?.status?.id === FAILED_STATUS || launch?.failreason).length
 }
 
 export const getContrastColors = (amount, bgColor) => {

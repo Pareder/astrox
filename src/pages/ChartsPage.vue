@@ -140,7 +140,9 @@ export default {
         datasets: [
           {
             label: 'Launches',
-            data: config.months.map(month => this.launches.filter(item => item.net.includes(month)).length),
+            data: config.months.map((month, index) => (
+              this.launches.filter(item => new Date(item.net).getMonth() === index).length
+            )),
             borderColor: color,
             fill: true,
             fillOpacity: 0.5,
@@ -164,7 +166,8 @@ export default {
             borderColor: color,
             data: config.continents.map(continent => {
               return this.launches.filter(item => {
-                return this.agencies[item.lsp] && this.agencies[item.lsp].continent === continent
+                return this.agencies[item.launch_service_provider] &&
+                  this.agencies[item.launch_service_provider].continent === continent
               }).length
             }),
             pointRadius: 5,
@@ -175,7 +178,7 @@ export default {
     },
 
     countriesChartData () {
-      const launchesCount = this.getLaunchesCountBy('countryName')
+      const launchesCount = this.getLaunchesCountBy('country')
 
       return {
         labels: launchesCount.labels,
@@ -315,12 +318,12 @@ export default {
       const uniqueData = {}
 
       for (const launch of this.launches) {
-        if (this.agencies[launch.lsp] && this.agencies[launch.lsp][arg]) {
-          if (!uniqueData[this.agencies[launch.lsp][arg]]) {
-            uniqueData[this.agencies[launch.lsp][arg]] = 0
+        if (this.agencies[launch.launch_service_provider.id] && this.agencies[launch.launch_service_provider.id][arg]) {
+          if (!uniqueData[this.agencies[launch.launch_service_provider.id][arg]]) {
+            uniqueData[this.agencies[launch.launch_service_provider.id][arg]] = 0
           }
 
-          ++uniqueData[this.agencies[launch.lsp][arg]]
+          ++uniqueData[this.agencies[launch.launch_service_provider.id][arg]]
         }
       }
 

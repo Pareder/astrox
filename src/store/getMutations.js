@@ -34,20 +34,7 @@ const getMutations = (localStorage = window.localStorage) => {
     },
 
     [types.SET_AGENCIES] (state, payload) {
-      state.agencies = payload.filter(item => item.name.toLowerCase() !== 'unknown')
-    },
-
-    [types.SET_AGENCY_TYPES] (state, payload) {
-      state.agencies.map(item => {
-        item.type = payload[item.type - 1].name
-      })
-    },
-
-    [types.SET_AGENCY_CONTINENT] (state, payload) {
-      state.agencies.map(item => {
-        item.continent = payload[item.countryCode] ? payload[item.countryCode].continent : ''
-        item.countryName = payload[item.countryCode] ? payload[item.countryCode].country : item.countryCode
-      })
+      state.agencies = payload
 
       if (!localStorage.getItem('launchAgencies')) {
         localStorage.setItem('launchAgencies', JSON.stringify(state.agencies))
@@ -88,14 +75,6 @@ const getMutations = (localStorage = window.localStorage) => {
     [types.SET_LAUNCH_DETAILS] (state, payload) {
       state.launchDetails = state.launchDetails || {}
       state.launchDetails[payload.id] = payload.data
-    },
-
-    [types.SET_MISSION_TYPES] (state, payload) {
-      state.missionTypes = [...payload]
-
-      if (!localStorage.getItem('missionTypes')) {
-        localStorage.setItem('missionTypes', JSON.stringify(payload))
-      }
     },
 
     [types.SET_PRESENT_YEAR_LAUNCHES] (state, payload) {

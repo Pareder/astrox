@@ -19,7 +19,7 @@
       <LaunchChip v-if="failedLaunches" :count="failedLaunches" status="fail"/>
       <LaunchChip v-if="successfulLaunches" :count="successfulLaunches" status="success"/>
       <LaunchChip v-if="pendingLaunches" :count="pendingLaunches" status="pending"/>
-      <LaunchLayout :launches="launches" :past="past" />
+      <LaunchLayout :launches="launches" />
     </div>
     <Chip v-if="error" className="red" icon="close">
       <b>No launches in selected period</b>
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { zeroTime, getPendingLaunchesCount, getSuccessfulLaunchesCount, getFailedLaunchesCount } from '../utils'
+import { getPendingLaunchesCount, getSuccessfulLaunchesCount, getFailedLaunchesCount } from '../utils'
 import LaunchLayout from '../components/LaunchLayout'
 import LaunchChip from '../components/LaunchChip'
 import Chip from '../components/Chip'
@@ -40,7 +40,6 @@ export default {
       datepicker: null,
       dateModal: false,
       error: false,
-      past: false
     }
   },
 
@@ -80,18 +79,15 @@ export default {
       this.error = false
       this.dateModal = false
       const date = isNaN(e) ? new Date(this.datepicker) : e
-      const startDate = `${date.getFullYear()}-${zeroTime(date.getMonth() + 1)}-${zeroTime(date.getDate())}`
-      const endDate = `${new Date().getFullYear()}-${zeroTime(new Date().getMonth() + 1)}-${zeroTime(new Date().getDate())}`
-
-      this.past = startDate < endDate
 
       this.$Progress.start()
-      this.API.getLaunchesByDate(startDate, endDate)
+      this.API.getLaunchesByDate(date)
         .then(launches => {
           this.launches = launches
           this.$Progress.finish()
         })
-        .catch(() => {
+        .catch((e) => {
+          console.log(e)
           this.error = true
           this.launches = null
           this.$Progress.fail()

@@ -10,27 +10,29 @@
       <v-card-text>
         <v-list two-line>
           <v-list-tile avatar>
-            <v-list-tile-avatar v-if="imageURL">
-              <img :src="imageURL" class="rocket_img" height="100%">
+            <v-list-tile-avatar v-if="launch.image">
+              <img :src="launch.image" class="rocket_img" height="100%">
             </v-list-tile-avatar>
             <v-list-tile-content>
-              <v-list-tile-title>{{ launch.rocket.familyname }} | {{ launch.rocket.name }}</v-list-tile-title>
+              <v-list-tile-title>
+                {{ launch.rocket.configuration.family }} | {{ launch.rocket.configuration.name }}
+              </v-list-tile-title>
               <v-list-tile-sub-title>Rocket</v-list-tile-sub-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile avatar v-if="missionType">
+          <v-list-tile avatar v-if="launch.mission.type">
             <v-list-tile-avatar>
               <v-icon>work</v-icon>
             </v-list-tile-avatar>
             <v-list-tile-content>
-              <v-list-tile-title>{{ missionType }}</v-list-tile-title>
+              <v-list-tile-title>{{ launch.mission.type }}</v-list-tile-title>
               <v-list-tile-sub-title>Mission</v-list-tile-sub-title>
             </v-list-tile-content>
           </v-list-tile>
-          <p v-if="launch.missions && launch.missions.length > 0 && launch.missions[0].description"
+          <p v-if="launch.mission && launch.mission.description"
             class="subheading text-xs-left px-3"
           >
-            {{ launch.missions[0].description }}
+            {{ launch.mission.description }}
           </p>
         </v-list>
         <v-tabs
@@ -42,31 +44,31 @@
           <v-tab href="#tab-0">
             <v-icon>map</v-icon>
           </v-tab>
-          <v-tab v-for="(video, id) in launch.vidURLs" :key="video" :href="`#tab-${id + 1}`">
+          <v-tab v-for="(video, id) in launch.vidURLs" :key="video.url" :href="`#tab-${id + 1}`">
             <v-icon>videocam</v-icon>
           </v-tab>
           <v-tab-item value="tab-0">
             <gmap-map :center="location" :zoom="8" class="map">
-              <gmap-marker :position="location" :title="launch.location.name"></gmap-marker>
+              <gmap-marker :position="location" :title="launch.pad.location.name"></gmap-marker>
             </gmap-map>
           </v-tab-item>
-          <v-tab-item v-for="(video, id) in launch.vidURLs" :key="id" :value="`tab-${id + 1}`">
+          <v-tab-item v-for="(video, id) in launch.vidURLs" :key="video.url" :value="`tab-${id + 1}`">
             <div class="video" v-if="dialog">
               <iframe
-                v-if="video.includes('youtube')"
+                v-if="video.url.includes('youtu')"
                 width="100%"
                 height="300"
                 frameborder="0"
-                :src="getYouTubeLink(video)"
+                :src="getYouTubeLink(video.url)"
               ></iframe>
               <iframe
-                v-else-if="video.includes('vimeo')"
+                v-else-if="video.url.includes('vimeo')"
                 width="100%"
                 height="300"
                 frameborder="0"
-                :src="getVimeoLink(link)"
+                :src="getVimeoLink(video.url)"
               ></iframe>
-              <v-btn v-else flat color="primary" :href="video">{{ video }}</v-btn>
+              <v-btn v-else flat color="primary" :href="video">{{ video.url }}</v-btn>
             </div>
           </v-tab-item>
         </v-tabs>
@@ -80,7 +82,7 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import { mapState } from 'vuex'
 import { getYouTubeLink, getVimeoLink } from '../../utils'
 
 export default {
@@ -90,8 +92,7 @@ export default {
         lat: null,
         lng: null
       },
-      activeTab: null,
-      missionType: null
+      activeTab: null
     }
   },
 
@@ -109,10 +110,6 @@ export default {
       'colorTheme'
     ]),
 
-    ...mapGetters([
-      'getMissionTypeName'
-    ]),
-
     localDialog: {
       get () {
         return this.dialog
@@ -121,33 +118,13 @@ export default {
         this.closeDialog()
       }
     },
-
-    imageURL () {
-      const imageArray = this.launch.rocket.imageURL.split('_')
-
-      return imageArray[1] && `${imageArray[0]}_320.${imageArray[1].split('.')[1]}`
-    }
   },
 
   watch: {
     launch: function (value) {
-      this.location.lat = this.launch.location.pads[0].latitude
-      this.location.lng = this.launch.location.pads[0].longitude
-
-      if (value.missions && value.missions.length > 0 && value.missions[0].type) {
-        if (this.$store.state.missionTypes) {
-          this.missionType = this.getMissionTypeName(value.missions[0].type)
-        } else {
-          this.$Progress.start()
-          this.$store.dispatch('getMissionTypes')
-            .then(() => {
-              this.missionType = this.getMissionTypeName(value.missions[0].type)
-              this.$Progress.finish()
-            })
-            .catch(() => {
-              this.$Progress.fail()
-            })
-        }
+      this.location = {
+        lat: Number(value?.pad?.latitude),
+        lng: Number(value?.pad?.longitude)
       }
     }
   },

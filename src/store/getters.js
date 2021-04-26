@@ -19,21 +19,15 @@ const getters = {
       : []
   },
 
-  getMissionTypeName: state => id => {
-    const missionType = state.missionTypes.find(item => item.id === id)
+  agencyTypeNames: state => ['All', ...new Set(state.agencies.map(item => item.type))].filter(Boolean),
 
-    return missionType ? missionType.name : 'Unknown'
-  },
-
-  agencyTypeNames: state => ['All', ...new Set(state.agencies.map(item => item.type))],
-
-  agencyCountries: state => ['All', ...new Set(state.agencies.map(item => item.countryCode).sort())],
+  agencyCountries: state => ['All', ...new Set(state.agencies.map(item => item.country).sort())].filter(Boolean),
 
   agencyObject: state => state.agencies.reduce((obj, agency) => {
     obj[agency.id] = {
       name: agency.name,
       continent: agency.continent,
-      countryName: agency.countryName,
+      country: agency.country,
       type: agency.type
     }
 
