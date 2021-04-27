@@ -43,6 +43,8 @@
     "@vue/cli-plugin-babel": "^4.4.6",
     "@vue/cli-plugin-eslint": "^4.4.6",
     "@vue/cli-service": "^4.4.6",
+    "@vue/test-utils": "^1.1.4",
+    "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.3",
     "deepmerge": "^4.2.2",
     "eslint": "^7.3.1",
@@ -50,6 +52,7 @@
     "fibers": "^5.0.0",
     "sass": "^1.26.9",
     "sass-loader": "^8.0.2",
+    "vue-jest": "^3.0.7",
     "vue-template-compiler": "^2.6.10"
   },
   "postcss": {
@@ -64,6 +67,16 @@
   "jest": {
     "transformIgnorePatterns": [
       "<rootDir>/(node_modules)/"
-    ]
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      ".*\\.(vue)$": "vue-jest",
+      ".*\\.(js)$": "babel-jest"
+    },
+    "setupFilesAfterEnv": ["./jest.setup.js"]
   }
 }

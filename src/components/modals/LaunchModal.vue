@@ -1,165 +1,32 @@
 <template>
   <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition" scrollable>
     <v-card tile>
-      <v-toolbar dark :color="colorTheme === 'light' ? 'primary' : ''">
-        <v-btn icon dark @click.native="close">
+      <v-toolbar dark :color="isThemeLight ? 'primary' : ''">
+        <v-btn icon dark @click.native="$emit('close')">
           <v-icon>close</v-icon>
         </v-btn>
         <v-toolbar-title>{{ agencyName ? `${agencyName} ` : '' }}Launches in {{ year }}</v-toolbar-title>
       </v-toolbar>
-      <v-card-text v-if="isSpaceX">
+      <v-card-text>
         <Chip v-if="!launches || !launches.length" className="red" icon="close" text="No launches in this year" />
-        <v-tabs
-          v-else
-          v-model="activeLaunch"
-          :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'"
-          dark
-          slider-color="yellow"
-          show-arrows
-        >
-          <v-tab v-for="(launch, id) in launches" :key="id" ripple>
-            {{ new Date(launch.launch_date_utc).toLocaleDateString().slice(0, -5) }}
-          </v-tab>
-          <v-tab-item v-for="(launch, id) in launches" :key="launch.id" lazy>
-            <v-card>
-              <div class="headline pa-3">{{ launch.mission_name }}</div>
-              <v-container fluid grid-list-lg>
-                <v-layout row wrap>
-                  <v-flex xs12 md6>
-                    <v-img class="no-padding" :src="launch.links.mission_patch" height="100%" contain>
-                      <v-list
-                        three-line
-                        class="list-with-bg"
-                        :style="`background-color:${colorTheme === 'light' ?
-                          'rgba(255,255,255,0.9)' :
-                          'rgba(66,66,66,0.9)'}`"
-                      >
-                        <v-subheader>Information</v-subheader>
-                        <v-list-tile avatar>
-                          <v-list-tile-content>
-                            <v-btn
-                              large
-                              :color="colorTheme === 'light' ? 'primary' : ''"
-                              right
-                              @click.stop="getRocketDetails(id)"
-                            >
-                              {{ launch.rocket.rocket_name }}
-                            </v-btn>
-                            <v-list-tile-sub-title>Rocket</v-list-tile-sub-title>
-                          </v-list-tile-content>
-                        </v-list-tile>
-                        <v-list-tile avatar>
-                          <v-avatar>
-                            <v-icon>access_time</v-icon>
-                          </v-avatar>
-                          <v-list-tile-content>
-                            <v-list-tile-title>
-                              {{ new Date(launch.launch_date_utc).toLocaleString() }}
-                            </v-list-tile-title>
-                            <v-list-tile-sub-title>Launch Date</v-list-tile-sub-title>
-                          </v-list-tile-content>
-                        </v-list-tile>
-                        <v-divider></v-divider>
-                        <v-list-tile avatar>
-                          <v-avatar>
-                            <v-icon>place</v-icon>
-                          </v-avatar>
-                          <v-list-tile-content>
-                            <v-list-tile-title>{{ launch.launch_site.site_name_long }}</v-list-tile-title>
-                            <v-list-tile-sub-title>Launch Site</v-list-tile-sub-title>
-                          </v-list-tile-content>
-                        </v-list-tile>
-                        <v-divider></v-divider>
-                        <v-card-text class="text-xs-left subheading" v-if="launch.details">
-                          {{ launch.details }}
-                        </v-card-text>
-                      </v-list>
-                    </v-img>
-                  </v-flex>
-                  <v-flex xs12 md6 class="pr-3">
-                    <v-tabs
-                      v-model="launch.activeTab"
-                      :color="colorTheme === 'light' ? 'primary darken-2' : 'grey darken-2'"
-                      dark
-                      slider-color="lime"
-                      icons-and-text
-                    >
-                      <v-tab>
-                        Map
-                        <v-icon>map</v-icon>
-                      </v-tab>
-                      <v-tab>
-                        Video
-                        <v-icon>videocam</v-icon>
-                      </v-tab>
-                      <v-tab-item>
-                        <gmap-map :center="launch.location" :zoom="10" class="map">
-                          <gmap-marker
-                            :position="launch.location"
-                            :title="launch.launch_site.site_name_long"
-                          ></gmap-marker>
-                        </gmap-map>
-                      </v-tab-item>
-                      <v-tab-item v-if="dialog && activeLaunch === id">
-                        <div class="video">
-                          <iframe
-                            v-if="launch.links.video_link"
-                            width="100%"
-                            height="400"
-                            frameborder="0"
-                            :src="getYouTubeLink(launch.links.video_link)"
-                          ></iframe>
-                        </div>
-                      </v-tab-item>
-                    </v-tabs>
-                  </v-flex>
-                  <v-flex xs12>
-                    <iframe
-                      v-if="dialog && activeLaunch === id && launch.telemetry.flight_club"
-                      class="mt-3 px-2"
-                      id="altitude1"
-                      title="Inline Frame Example"
-                      width="100%"
-                      height="600"
-                      frameborder="0"
-                      :src="launch.telemetry.flight_club"
-                    ></iframe>
-                  </v-flex>
-                </v-layout>
-              </v-container>
-            </v-card>
-          </v-tab-item>
-        </v-tabs>
-      </v-card-text>
-      <v-card-text v-else>
-        <Chip v-if="!launches || !launches.length" className="red" icon="close">
-          <b>No launches in selected period</b>
-        </Chip>
-        <LaunchLayout :launches="launches" :past="past" />
+        <SpaceXContent v-else-if="isSpaceX" :launches="launches" />
+        <LaunchLayout v-else :launches="launches" />
       </v-card-text>
       <div style="flex: 1 1 auto;"></div>
     </v-card>
-    <RocketModal
-      :dialog="rocketDialog"
-      @closeDialog="closeRocketDialog"
-      :rocket="rocket"
-    />
   </v-dialog>
 </template>
 
 <script>
-import { mapState } from 'vuex'
-import { getYouTubeLink } from '../../utils'
-import LaunchLayout from '../LaunchLayout'
-import RocketModal from './RocketModal'
+import { mapGetters } from 'vuex'
 import Chip from '../Chip'
+import LaunchLayout from '../LaunchLayout'
+import SpaceXContent from '@/components/SpaceXContent'
 
 export default {
   data () {
     return {
-      activeLaunch: 0,
-      rocket: null,
-      rocketDialog: false
+      activeLaunch: 0
     }
   },
 
@@ -173,65 +40,24 @@ export default {
     dialog: {
       type: Boolean
     },
-    closeDialog: {
-      type: Function
-    },
     agencyName: {
       type: String
     },
     isSpaceX: {
       type: Boolean
-    },
-    past: {
-      type: Boolean
     }
   },
 
   computed: {
-    ...mapState([
-      'colorTheme'
+    ...mapGetters([
+      'isThemeLight'
     ])
   },
 
-  methods: {
-    close () {
-      this.activeLaunch = 0
-      this.$emit('closeDialog')
-    },
-
-    getRocketDetails (id) {
-      const name = this.launches[id].rocket.rocket_name.replace(' ', '').toLowerCase()
-
-      if (this.$store.state.rockets[name]) {
-        this.rocket = { ...this.$store.state.rockets[name] }
-        this.rocketDialog = true
-      } else {
-        this.$Progress.start()
-        this.$store.dispatch('getRocket', name)
-          .then(() => {
-            this.rocket = { ...this.$store.state.rockets[name] }
-            this.rocketDialog = true
-            this.$Progress.finish()
-          })
-          .catch(() => {
-            this.$Progress.fail()
-          })
-      }
-    },
-
-    closeRocketDialog () {
-      this.rocketDialog = false
-    },
-
-    getYouTubeLink (link) {
-      return getYouTubeLink(link)
-    }
-  },
-
   components: {
+    Chip,
     LaunchLayout,
-    RocketModal,
-    Chip
+    SpaceXContent
   }
 }
 </script>

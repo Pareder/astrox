@@ -8,18 +8,19 @@
       :agencyAbbrev="agencyAbbrev"
     />
     <LaunchModal
-      @closeDialog="closeDialog"
       :dialog="dialog"
       :launches="launchesByYearClicked"
       :year="year"
       :agencyName="agencyName"
-      :past="true"
+      :isSpaceX="isSpaceX"
+      @close="closeDialog"
     />
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
+import config from '../config'
 import Chart from './charts/Chart'
 import LaunchModal from './modals/LaunchModal'
 
@@ -49,7 +50,16 @@ export default {
   computed: {
     ...mapGetters([
       'agencyPastLaunches'
-    ])
+    ]),
+
+    ...mapState([
+      'agenciesLaunches',
+      'history'
+    ]),
+
+    isSpaceX () {
+      return this.agencyId === config.SPACEX_ID
+    }
   },
 
   created () {
@@ -58,8 +68,8 @@ export default {
 
   methods: {
     getLaunchesByYears () {
-      const getAgencyLaunches = new Promise(resolve => {
-        if (this.$store.state.agenciesLaunches[this.agencyId]) {
+      const getAgencyLaunches = () => new Promise(resolve => {
+        if (this.agenciesLaunches[this.agencyId]) {
           resolve(this.agencyPastLaunches(this.agencyId))
         } else {
           this.$store.dispatch('getAgencyAllLaunches', this.agencyId)
@@ -67,17 +77,31 @@ export default {
               resolve(this.agencyPastLaunches(this.agencyId))
             })
             .catch(() => {
-              resolve(null)
+              resolve([])
+            })
+        }
+      })
+      const getSpaceXLaunches = () => new Promise(resolve => {
+        if (this.agenciesLaunches[config.SPACEX_ID]?.official) {
+          this.launches = this.agenciesLaunches[config.SPACEX_ID].official
+          resolve()
+        } else {
+          this.$store.dispatch('getSpaceXLaunches')
+            .then(() => {
+              resolve(this.agenciesLaunches[config.SPACEX_ID].official)
+            })
+            .catch(() => {
+              resolve([])
             })
         }
       })
       const getHistory = new Promise((resolve, reject) => {
-        if (this.$store.state.history) {
-          resolve(this.$store.state.history)
+        if (this.history) {
+          resolve(this.history)
         } else {
           this.$store.dispatch('getHistory')
             .then(() => {
-              resolve(this.$store.state.history)
+              resolve(this.history)
             })
             .catch(error => {
               reject(error.msg)
@@ -86,7 +110,7 @@ export default {
       })
 
       this.$Progress.start()
-      Promise.all([getAgencyLaunches, getHistory])
+      Promise.all([this.isSpaceX ? getSpaceXLaunches() : getAgencyLaunches(), getHistory])
         .then(([agencyLaunches, history]) => {
           this.launches = agencyLaunches
           this.setLaunchesByYear(history)
@@ -107,22 +131,18 @@ export default {
         return obj
       }, {})
 
-      if (this.launches.length) {
-        for (const launch of this.launches) {
-          const year = new Date(launch.net).getFullYear()
-
-          if (this.launchesByYears[year] && new Date(launch.net).getTime() < Date.now()) {
-            ++this.launchesByYears[year].agency
-          }
+      for (const launch of this.launches) {
+        const year = new Date(launch.net || launch.launch_date_utc).getFullYear()
+        if (this.launchesByYears[year] && new Date(launch.net || launch.launch_date_utc).getTime() < Date.now()) {
+          this.launchesByYears[year].agency++
         }
       }
     },
 
     openDialog (year) {
-      this.launchesByYearClicked = this.launches.filter(item => {
-        if (new Date(item.net).getFullYear() === year && new Date(item.net).getTime() < Date.now()) {
-          return item
-        }
+      this.launchesByYearClicked = this.launches.filter(launch => {
+        const date = new Date(launch.net || launch.launch_date_utc)
+        return date.getFullYear() === year && date.getTime() < Date.now()
       })
 
       this.year = year

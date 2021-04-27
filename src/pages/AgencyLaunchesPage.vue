@@ -13,8 +13,7 @@
         Upcoming
       </v-tab>
       <v-tab-item lazy class="mt-3">
-        <SpaceXPast v-if="agencyId === SPACEX_ID" />
-        <PastLaunches v-else :agencyId="agencyId" :agencyAbbrev="agencyAbbrev" :agencyName="agencyName" />
+        <PastLaunches :agencyId="agencyId" :agencyAbbrev="agencyAbbrev" :agencyName="agencyName" />
       </v-tab-item>
       <v-tab-item lazy class="mt-3">
         <UpcomingLaunches :agencyId="agencyId" :agencyAbbrev="agencyAbbrev" :agencyName="agencyName" />
@@ -24,8 +23,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import config from '../config'
-import SpaceXPast from '../components/SpaceXPast'
 import PastLaunches from '../components/PastLaunches'
 import UpcomingLaunches from '../components/UpcomingLaunches'
 
@@ -35,8 +32,7 @@ export default {
       active: 0,
       agencyId: +this.id,
       agencyAbbrev: this.abbrev,
-      agencyName: this.agencyName,
-      SPACEX_ID: config.SPACEX_ID
+      agencyName: this.agencyName
     }
   },
 
@@ -87,7 +83,6 @@ export default {
   },
 
   components: {
-    SpaceXPast,
     PastLaunches,
     UpcomingLaunches
   }

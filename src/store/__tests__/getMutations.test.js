@@ -284,22 +284,6 @@ describe('vuex mutations', () => {
     })
   })
 
-  describe('SET_LAUNCH_DETAILS method', () => {
-    const state = {}
-    const payload = {
-      id: 1,
-      data: [1, 2, 3]
-    }
-
-    it('Should set correct state', () => {
-      getMutations().SET_LAUNCH_DETAILS(state, payload)
-
-      expect(state.launchDetails).toEqual({
-        1: [1, 2, 3]
-      })
-    })
-  })
-
   describe('SET_PRESENT_YEAR_LAUNCHES method', () => {
     const state = {}
     const payload = {

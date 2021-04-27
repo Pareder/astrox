@@ -155,12 +155,6 @@ class API {
     ])
   }
 
-  async getLaunchDetails (id) {
-    const response = await this._http.get(`${this._config.apiServer}/launch/${id}/`)
-
-    return response.body
-  }
-
   async getRocket (name) {
     const response = await this._http.get(`${this._config.spaceXApi}/rockets/${name}`)
 

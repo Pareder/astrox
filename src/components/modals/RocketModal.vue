@@ -44,14 +44,19 @@
         </v-list>
       </v-card-text>
       <v-card-actions>
-        <v-btn :color="colorTheme === 'light' ? 'primary' : ''" @click.stop="$emit('closeDialog')">Close</v-btn>
+        <v-btn
+          :color="isThemeLight ? 'primary' : ''"
+          @click.stop="$emit('close')"
+        >
+          Close
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapGetters } from 'vuex'
 
 export default {
   props: {
@@ -64,15 +69,16 @@ export default {
   },
 
   computed: {
-    ...mapState([
-      'colorTheme'
+    ...mapGetters([
+      'isThemeLight'
     ]),
+
     localDialog: {
       get () {
         return this.dialog
       },
       set () {
-        this.$emit('closeDialog')
+        this.$emit('close')
       }
     }
   }

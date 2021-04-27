@@ -8,11 +8,11 @@
       :agencyAbbrev="agencyAbbrev"
     />
     <LaunchModal
-      @closeDialog="closeDialog"
       :dialog="dialog"
       :launches="launchesByYearClicked"
       :year="year"
       :agencyName="agencyName"
+      @close="closeDialog"
     />
   </div>
 </template>

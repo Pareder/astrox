@@ -72,11 +72,6 @@ const getMutations = (localStorage = window.localStorage) => {
       }
     },
 
-    [types.SET_LAUNCH_DETAILS] (state, payload) {
-      state.launchDetails = state.launchDetails || {}
-      state.launchDetails[payload.id] = payload.data
-    },
-
     [types.SET_PRESENT_YEAR_LAUNCHES] (state, payload) {
       state.presentYearLaunches = [...payload.data]
 

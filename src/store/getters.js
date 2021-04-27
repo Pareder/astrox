@@ -35,7 +35,9 @@ const getters = {
   }, {}),
 
   historyLaunchesByYear: state => (year = new Date().getFullYear()) => state.historyLaunches &&
-    state.historyLaunches[year] && state.historyLaunches[year].launches
+    state.historyLaunches[year] && state.historyLaunches[year].launches,
+
+  isThemeLight: state => state?.colorTheme === 'light'
 }
 
 export default getters

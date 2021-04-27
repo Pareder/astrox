@@ -20,7 +20,7 @@
               <v-list-tile-sub-title>Rocket</v-list-tile-sub-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile avatar v-if="launch.mission.type">
+          <v-list-tile avatar v-if="launch.mission && launch.mission.type">
             <v-list-tile-avatar>
               <v-icon>work</v-icon>
             </v-list-tile-avatar>

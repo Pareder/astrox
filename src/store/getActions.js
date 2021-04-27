@@ -107,11 +107,6 @@ const getActions = (api, localStorage = window.localStorage) => {
       })
     },
 
-    async getLaunchDetails ({ commit }, id) {
-      const data = await api.getLaunchDetails(id)
-      commit(types.SET_LAUNCH_DETAILS, { id, data })
-    },
-
     async getRocket ({ commit }, name) {
       const rockets = JSON.parse(localStorage.getItem('rockets'))
 

@@ -267,19 +267,6 @@ describe('vuex actions', () => {
     })
   })
 
-  describe('getLaunchDetails method', () => {
-    const method = 'getLaunchDetails'
-
-    it('Should call commit with api data', async () => {
-      const id = 1
-      const data = [1, 2, 3]
-      const fn = getMethod({ method, data })
-      await fn(id)
-
-      expect(commitMock).toBeCalledWith('SET_LAUNCH_DETAILS', { id, data })
-    })
-  })
-
   describe('getRocket method', () => {
     const method = 'getRocket'
 

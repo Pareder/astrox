@@ -14,7 +14,6 @@ function getStore(Vue) {
       historyLaunches: {},
       allUpcomingLaunches: null,
       agencies: null,
-      launchDetails: null,
       presentYearLaunches: null,
       colorTheme: localStorage.getItem('colorTheme') ? localStorage.getItem('colorTheme') : 'light'
     },

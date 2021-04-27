@@ -388,35 +388,6 @@ describe('API class', () => {
     })
   })
 
-  describe('getLaunchDetails method', () => {
-    it('Should call http.get with correct parameters', async () => {
-      const id = 1
-      const http = getHttpMock({ body: { results: [] } })
-      const api = getAPI(http)
-
-      await api.getLaunchDetails(id)
-
-      expect(http.get).toBeCalledWith(`api.com/launch/${id}/`)
-    })
-
-    it('Should return correct values', async () => {
-      const body = { name: 'a' }
-      const http = getHttpMock({ body })
-      const api = getAPI(http)
-
-      const result = await api.getLaunchDetails()
-
-      expect(result).toEqual(body)
-    })
-
-    it('Should reject if error has been occurred', () => {
-      const http = getHttpMock(Promise.reject({}))
-      const api = getAPI(http)
-
-      expect(api.getLaunchDetails()).rejects.toEqual({})
-    })
-  })
-
   describe('getRocket method', () => {
     it('Should call http.get with correct parameters', async () => {
       const name = 'rocket'
