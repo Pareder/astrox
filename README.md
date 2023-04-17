@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/988e0de8-e860-4596-8a85-4cdbc88dae94/deploy-status)](https://app.netlify.com/sites/aastrox/deploys)
+
 # AstroX
 
 <p align="center">
