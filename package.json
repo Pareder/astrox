@@ -2,14 +2,12 @@
   "name": "astrox",
   "version": "1.1.4",
   "engines": {
-    "node": "12.18.2"
+    "node": "20.18.0"
   },
   "repository": "https://github.com/Pareder/astrox.git",
   "author": "Pareder",
   "license": "MIT",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test": "jest",
@@ -24,9 +22,7 @@
     "@babel/preset-env": "^7.10.4",
     "babel-jest": "^26.1.0",
     "chart.js": "^2.9.4",
-    "compression": "^1.7.4",
     "core-js": "^3.6.5",
-    "express": "^4.20.0",
     "jest": "^26.1.0",
     "material-design-icons-iconfont": "^5.0.1",
     "vue": "^2.6.10",
@@ -77,6 +73,8 @@
       ".*\\.(vue)$": "vue-jest",
       ".*\\.(js)$": "babel-jest"
     },
-    "setupFilesAfterEnv": ["./jest.setup.js"]
+    "setupFilesAfterEnv": [
+      "./jest.setup.js"
+    ]
   }
 }
